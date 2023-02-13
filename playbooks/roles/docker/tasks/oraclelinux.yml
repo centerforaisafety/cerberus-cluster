@@ -60,3 +60,27 @@
       name: opc
       groups: docker
       append: yes
+
+# Start Containers
+# Ansible 2.9 doesn't provide a clear way to add gpu support to docker containers through the `docker_container` module.
+# Using the `shell` module as a work around. 
+  - name: Check for NVIDIA GPU availability
+    shell: nvidia-smi
+    register: nvidia_smi_output
+    ignore_errors: true
+  
+  - name: Create NVIDIA DCGM Exporter container
+    become: true
+    ansible.builtin.shell:
+      cmd: docker container run -d --gpus all --restart unless-stopped --name=dcgm-exporter -p 9400:9400 nvidia/dcgm-exporter:3.3.5-3.4.0-ubi9
+    when: nvidia_smi_output.rc == 0
+    args:
+      executable: /bin/bash
+    register: docker_run_result
+    failed_when: docker_run_result.stderr != '' and 'already in use' not in docker_run_result.stderr
+    changed_when: "'dcgm-exporter' in docker_run_result.stdout"
+
+  - name: Debug docker run result
+    debug:
+      var: docker_run_result.stdout
+    when: nvidia_smi_output.rc == 0

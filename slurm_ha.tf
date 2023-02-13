@@ -204,6 +204,9 @@ resource "null_resource" "cluster_backup" {
       home_nfs                  = var.home_nfs,
       create_fss                = var.create_fss,
       home_fss                  = var.home_fss,
+      create_home_fss           = var.create_home_fss,
+      home_fss_source_IP        = local.home_fss_source_IP,
+      home_fss_source_path      = var.home_fss_source_path,
       scratch_nfs               = var.use_scratch_nfs && var.node_count > 0,
       cluster_nfs               = var.use_cluster_nfs,
       cluster_nfs_path          = var.cluster_nfs_path,
@@ -257,6 +260,10 @@ resource "null_resource" "cluster_backup" {
       api_user_ocid             = var.api_user_ocid,
       healthchecks              = var.healthchecks,
       change_hostname           = var.change_hostname,
+      billing                   = var.billing,
+      billing_mysql_db_admin_username = var.billing_mysql_db_admin_username,
+      billing_mysql_db_admin_password = var.billing_mysql_db_admin_password,
+      billing_mysql_ip = var.billing ? oci_mysql_mysql_db_system.billing_mysql_db_system[0].ip_address : ""
       hostname_convention       = var.hostname_convention,
       change_hostname           = var.change_hostname,
       hostname_convention       = var.hostname_convention
@@ -383,6 +390,9 @@ resource "null_resource" "cluster_backup" {
       home_nfs                            = var.home_nfs,
       create_fss                          = var.create_fss,
       home_fss                            = var.home_fss,
+      create_home_fss                     = var.create_home_fss,
+      home_fss_source_IP                  = local.home_fss_source_IP,
+      home_fss_source_path                = var.home_fss_source_path,
       add_nfs                             = var.add_nfs,
       nfs_target_path                     = var.nfs_target_path,
       nfs_source_IP                       = local.nfs_source_IP,
@@ -415,6 +425,10 @@ resource "null_resource" "cluster_backup" {
       numa_nodes_per_socket               = var.numa_nodes_per_socket,
       percentage_of_cores_enabled         = var.percentage_of_cores_enabled,
       healthchecks                        = var.healthchecks,
+      billing                             = var.billing,
+      billing_mysql_db_admin_username     = var.billing_mysql_db_admin_username,
+      billing_mysql_db_admin_password     = var.billing_mysql_db_admin_password,
+      billing_mysql_ip = var.billing ? oci_mysql_mysql_db_system.billing_mysql_db_system[0].ip_address : ""
       change_hostname                     = var.change_hostname,
       hostname_convention                 = var.hostname_convention
     })

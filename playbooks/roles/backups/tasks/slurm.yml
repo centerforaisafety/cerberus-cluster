@@ -1,0 +1,42 @@
+---
+- name: Copy scripts
+  become: true
+  copy: 
+    src: '{{ item }}'
+    dest: '/opt/oci-hpc/scripts/{{ item }}'
+    force: no
+    owner: '{{ ansible_user }}'
+    group: '{{ ansible_user }}'
+    mode: 0770
+  with_items:
+    - slurm_backup.sh
+
+- name: Create crontab entry to backup Slurm
+  cron:
+    name: Backup Slurm
+    minute: "0"
+    hour: "0"
+    user: '{{ ansible_user }}'
+    job: "/opt/oci-hpc/scripts/slurm_backup.sh"
+    disabled: true
+
+- name: Create credentials file for MySQL authentication credentials for Slurm database
+  file:
+    path: "/home/ubuntu/.slurm.cnf"
+    state: touch
+    mode: u=rw
+
+- name: Get mysql root password
+  set_fact:
+    mysql_root_pwd: "{{ lookup('password',
+                          '/etc/opt/oci-hpc/passwords/mysql/root.txt
+                           chars=ascii_letters,digits,hexdigits') }}"
+
+- name: Add content to credentials file
+  copy:
+    dest: "/home/ubuntu/.slurm.cnf"
+    content: |
+      [client]
+      user=root
+      password={{ mysql_root_pwd }}
+      host=localhost

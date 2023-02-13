@@ -159,6 +159,9 @@ variableGroups:
       - ${use_advanced}
       - ${home_nfs}
       - ${home_fss}
+      - ${create_home_fss}
+      - ${home_fss_source_IP}
+      - ${home_fss_source_path}
       - ${use_cluster_nfs}
       - ${cluster_nfs_path}
       - ${controller_block}
@@ -204,6 +207,12 @@ variableGroups:
       - ${sacct_limits}
       - ${healthchecks}
 
+  - title: "Billing"
+    variables:
+      - ${billing}
+      - ${billing_shape_name}
+      - ${billing_mysql_db_admin_username}
+      - ${billing_mysql_db_admin_password}
   - title: "Hidden"
     variables:
       - ${region}
@@ -536,7 +545,7 @@ variables:
             - ${use_advanced}
   home_nfs:
     type: boolean
-    title: "shared NFS /home from controller. To use FSS, make sure you created one or added NFS mount information"
+    title: "shared NFS /home from controller."
     visible:
       and:
         - ${use_advanced}
@@ -544,14 +553,49 @@ variables:
 
   home_fss:
     type: boolean
-    title: "Use the mounted FSS/NFS as /home."
-    description: "If not creating a new FSS, it will create a nfs_source_path/home directory"
+    title: "Use FSS for /home."
+    description: "If not creating a new FSS, it will create a home_fss_source_path/home directory"
     visible:
       and:
         - ${use_advanced}
         - ${home_nfs}
-        - ${add_nfs}
-    default: false
+    default: true
+
+  create_home_fss:
+    type: boolean
+    title: "Create FSS for /home."
+    visible:
+      and:
+        - ${use_advanced}
+        - ${home_nfs}
+        - ${home_fss}
+    default: true
+
+  home_fss_source_IP:
+    type: string
+    title: "/home FSS server IP"
+    default: "0.0.0.0"
+    required: true
+    description: "IP address of the home fss server"
+    visible: 
+      and:
+        - ${use_advanced}
+        - ${home_nfs}
+        - ${home_fss}
+        - not:
+          - ${create_home_fss}
+
+  home_fss_source_path:
+    type: string
+    title: "/home FSS server Path"
+    default: "/home"
+    description: "Value of the path on /home FSS server"
+    visible: 
+      and:
+        - ${use_advanced}
+        - ${home_nfs}
+        - ${home_fss}
+    required: true
 
   use_cluster_nfs:
     type: boolean
@@ -560,6 +604,7 @@ variables:
       and:
         - ${use_advanced}
     default: true
+
   cluster_nfs_path:
     title: "Cluster share mount point"
     description: "Path to NFS share"
@@ -1037,17 +1082,20 @@ variables:
     title: "Deploy Master Node without a public IP"
     description: "Deploy with no Public IP for the master node. 'Master Node Subnet' must be a Private subnet. This will require the creation of a controller service, VPN or FastConnect to connect via ssh to the master node"      
     default: false
+
   use_existing_vcn:
     type: boolean
     title: "Use Existing VCN"
     description: "Use existing VCN or create new one. If true, make sure the security lists are correctly set in the subnets (ex: Open traffic within VCN)"
     default: false
+
   vcn_compartment:
     title: "VCN compartment"
     type: oci:identity:compartment:id
     visible: ${use_existing_vcn}
     default: ${targetCompartment}
     required: true
+
   vcn_id:
     type: oci:core:vcn:id
     visible:
@@ -1058,6 +1106,7 @@ variables:
     required: true
     dependsOn:
       compartmentId: ${vcn_compartment}
+
   public_subnet_id:
     title: Master Node Subnet
     type: oci:core:subnet:id
@@ -1067,6 +1116,7 @@ variables:
       hidePrivateSubnet: false
     visible: ${use_existing_vcn}  
     required: true
+
   private_subnet_id:
     title: Private Subnet
     type: oci:core:subnet:id
@@ -1076,11 +1126,13 @@ variables:
       hidePublicSubnet: true
     visible: ${use_existing_vcn}
     required: true
+
   dns_entries: 
     title: DNS entry
     type: boolean
     default: true
     description: "Only available for a private zone" 
+
   zone_name:
     title: Private Zone Name
     description: "The zone needs to be private for the stack to be able to add entries"
@@ -1090,6 +1142,7 @@ variables:
         - ${dns_entries}
         - ${use_existing_vcn}
     required: ${dns_entries}
+
   vcn_subnet:
     type: string
     title: "VCN IP range"
@@ -1395,6 +1448,7 @@ variables:
         - ${add_nfs} 
         - not:
           - ${create_fss}
+
   monitoring_shape_name:
     type: string
     title: "MySQL Shape Name"
@@ -1947,3 +2001,52 @@ variables:
       and:
         - ${use_marketplace_image_monitoring}
         - ${monitoring_node}
+
+  old_marketplace_listing_login:
+    type: enum
+    title: "Image version"
+    description: "Marketplace listing to use"
+    required: true
+    enum:
+      - "1. Oracle Linux 7.9 OFED 5.3-1.0.0.1 RHCK 20210607"
+      - "2. Oracle Linux 7.8 OFED 5.0-1.0.0.0 UEK 20200826"
+      - "3. Oracle Linux 7.7 OFED 4.4-2.0.7.0 UEK 20200229"
+      - "4. Oracle Linux 7.9 OFED 5.0-2.1.8.0 RHCK 20210709"
+    default: "4. Oracle Linux 7.9 OFED 5.0-2.1.8.0 RHCK 20210709"
+    visible:
+      and:
+        - ${use_marketplace_image_login}
+        - ${use_old_marketplace_image_login}
+        - not:
+          - ${use_standard_image_login}
+
+  billing:
+    type: boolean
+    title: "Enable billing"
+    default: false
+    description: "Enable billing for the cluster."
+    visible: true
+  
+  billing_shape_name:
+    type: string
+    title: "Billing Shape Name"
+    default: "MySQL.VM.Standard.E4.1.8GB"
+    required: true
+    description: "Billing Shape Name"
+    visible: ${billing}
+
+  billing_mysql_db_admin_username:
+    type: string
+    title: "MySQL Billing Admin DB username"
+    default: "opc"
+    required: true
+    description: ""
+    visible: ${billing}
+
+  billing_mysql_db_admin_password:
+    type: string
+    title: "MySQL Billing Admin DB password"
+    default: "Billing1234!"
+    description: "" 
+    required: true
+    visible: ${billing}

@@ -105,6 +105,9 @@ variable "controller_mount_ip" {default = "${controller_mount_ip}"}
 variable "login_mount_ip" {default = "${login_mount_ip}"}
 variable "home_nfs" { default = ${home_nfs} } 
 variable "home_fss" { default = ${home_fss} } 
+variable "create_home_fss" { default = ${create_home_fss} } 
+variable "home_fss_source_IP" { default = ${home_fss_source_IP} }
+variable "home_fss_source_path" { default = ${home_fss_source_path} }
 variable "latency_check" { default = ${latency_check} } 
 variable "create_fss" { default = ${create_fss} } 
 variable "configure" { default = true }
@@ -122,7 +125,6 @@ variable "image_ocid" { default = "##IMAGE##" }
 variable "ldap" { default = ${ldap} }
 variable "cluster_monitoring" { default = ${cluster_monitoring} }
 variable "autoscaling_monitoring" { default = ${autoscaling_monitoring} }
-
 
 variable "tags" { default = "##TAGS##" }
 variable "private_deployment" { default = ${private_deployment} }
@@ -157,6 +159,11 @@ variable "numa_nodes_per_socket" {
 variable "percentage_of_cores_enabled" {
   default = "${percentage_of_cores_enabled}"
 }
+variable "billing" { default = "${billing}" }
+variable "billing_mysql_db_admin_username" { default = "${billing_mysql_db_admin_username}" }
+variable "billing_mysql_db_admin_password" { default = "${billing_mysql_db_admin_password}" }
+variable "billing_mysql_ip" { default = "$billing_mysql_ip" }
+
 variable "change_hostname" {
   default = ##CH_HOST##
 }

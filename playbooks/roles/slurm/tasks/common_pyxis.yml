@@ -1,10 +1,11 @@
 ---
-
-- set_fact: 
+- name: set /etc/enroot as enroot path if no nvme drive
+  set_fact: 
     enroot_top_path_checked: "/etc/enroot/"
   when: " not 'nvme0n1' in hostvars[inventory_hostname].ansible_devices"
 
-- set_fact: 
+- name: set {{enroot_top_path}} as enroot path if nvme drive
+  set_fact: 
     enroot_top_path_checked: "{{enroot_top_path}}"
   when: "'nvme0n1' in hostvars[inventory_hostname].ansible_devices" 
   
@@ -51,13 +52,14 @@
   git:
     repo: https://github.com/NVIDIA/pyxis.git
     dest: /tmp/pyxis
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: compile 
   command: bash -c "sudo make install"
   args:
     chdir: /tmp/pyxis/
-  ignore_errors: yes
+  ignore_errors: true
+  when: not ansible_check_mode
 
 - name: create plugstack.conf
   become: true
