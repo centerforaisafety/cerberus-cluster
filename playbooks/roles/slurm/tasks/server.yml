@@ -37,7 +37,7 @@
   include_role: 
     name: safe_yum
   when: ansible_os_family == 'RedHat'
-  
+
 - name: Render systemd units for slurm and slurmdbd
   become: true
   template:
@@ -177,7 +177,15 @@
     dest: '{{ slurm_conf_path }}/gres.conf'
     mode: '0644'
     backup: yes
-    
+
+- name: Generate job_container.conf
+  become: true
+  template:
+    src: job_container.conf.j2
+    dest: '{{ slurm_conf_path }}/job_container.conf'
+    mode: '0644'
+    backup: yes
+
 - name: Generate topology.conf
   become: true
   template: 
@@ -191,7 +199,6 @@
   register: initial_topology
   run_once: true
   notify: reconfigure slurm
-
 
 - name: run handlers
   meta: flush_handlers
