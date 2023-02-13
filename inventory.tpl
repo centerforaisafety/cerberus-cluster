@@ -84,3 +84,7 @@ dns_entries=${dns_entries}
 healthchecks=${healthchecks}
 change_hostname=${change_hostname}
 hostname_convention=${hostname_convention}
+billing=${billing}
+billing_mysql_db_admin_username=${billing_mysql_db_admin_username}
+billing_mysql_db_admin_password=${billing_mysql_db_admin_password}
+billing_mysql_ip=${billing_mysql_ip}
