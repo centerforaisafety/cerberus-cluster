@@ -1,0 +1,64 @@
+---
+- name: Fetch user IDs from MySQL on the controller
+  hosts: controller
+  gather_facts: false
+  tasks:
+    - name: Query MySQL for user IDs
+      command: mysql --defaults-extra-file="/home/ubuntu/.billing.cnf" -N -e "SELECT user_id FROM billing.users WHERE archived = 0;"
+      register: user_ids_result
+
+    - name: Set a fact containing the list of UIDs
+      set_fact:
+        user_ids_list: "{{ user_ids_result.stdout_lines }}"
+
+- name: Apply iptables rules on compute nodes
+  hosts: all
+  gather_facts: false
+  become: yes
+  vars:
+    # Standard private subnets (RFC1918)
+    skip_subnets:
+      - "10.0.0.0/8"
+      - "172.16.0.0/12"
+      - "192.168.0.0/16"
+  tasks:
+    - name: Check if USER_TRAFFIC chain exists
+      command: iptables -S USER_TRAFFIC
+      register: chain_exists
+      failed_when: false
+      changed_when: false
+
+    - name: Flush the USER_TRAFFIC chain if it exists
+      command: iptables -F USER_TRAFFIC
+      when: chain_exists.rc == 0
+
+    - name: Create USER_TRAFFIC chain if it doesn't exist
+      command: iptables -N USER_TRAFFIC
+      when: chain_exists.rc != 0
+
+    - name: Ensure OUTPUT jumps to USER_TRAFFIC (check)
+      command: iptables -C OUTPUT -j USER_TRAFFIC
+      register: jump_exists
+      failed_when: false
+      changed_when: false
+
+    - name: Insert jump from OUTPUT to USER_TRAFFIC if not present
+      command: iptables -I OUTPUT 1 -j USER_TRAFFIC
+      when: jump_exists.rc != 0
+
+    - name: Skip traffic to private/RFC1918 subnets
+      loop: "{{ skip_subnets }}"
+      loop_control:
+        label: "{{ item }}"
+      shell: >
+        iptables -C USER_TRAFFIC -d {{ item }} -j RETURN || iptables -A USER_TRAFFIC -d {{ item }} -j RETURN
+
+    - name: Add per-user marking rules
+      loop: "{{ hostvars[groups['controller'][0]].user_ids_list }}"
+      loop_control:
+        label: "{{ item }}"
+      shell: >
+        iptables -C USER_TRAFFIC -m owner --uid-owner {{ item }} -j MARK --set-mark {{ item }} || iptables -A USER_TRAFFIC -m owner --uid-owner {{ item }} -j MARK --set-mark {{ item }}
+
+    - name: Save iptables rules
+      shell: sudo iptables-save | sudo tee /etc/iptables/rules.v4

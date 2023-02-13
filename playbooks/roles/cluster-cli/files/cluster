@@ -16,6 +16,7 @@ people_dn = 'ou=People,dc=local'
 with open('/etc/opt/oci-hpc/passwords/openldap/root.txt', 'r') as f: 
   bind_pass = f.read().splitlines()[0]
 
+
 def exists(key, value):
     try:
         if key == 'uid':
@@ -29,6 +30,27 @@ def exists(key, value):
 
     except KeyError:
         return False
+
+def ldap_gid_exists(gid):
+    """ Check if GID exists in LDAP """
+    search_base = groups_dn
+    search_filter = '(gidNumber={})'.format(gid)
+    server = ldap3.Server(host, use_ssl=True)
+    with ldap3.Connection(server, bind_dn, bind_pass, auto_bind=True) as conn:
+        conn.search(search_base, search_filter, attributes=['gidNumber'])
+        return len(conn.entries) > 0
+
+def gid_exists(gid):
+    """ Check if GID exists at the system level or in LDAP """
+    # Check at the system level
+    if exists('gid', gid):
+        return True
+
+    # Check on the LDAP server
+    if ldap_gid_exists(gid):
+        return True
+
+    return False
 
 def find_next_gid(): 
   base_gid = 10005
@@ -44,7 +66,8 @@ def find_next_gid():
         base_gid = int(entry.gidNumber.raw_values[0])
 
     return base_gid + 1
-     
+
+
 def find_next_uid(): 
   base_uid = 10005
   search_base = people_dn
@@ -61,15 +84,18 @@ def find_next_uid():
         base_uid = int(entry.uidNumber.raw_values[0])
 
     return base_uid + 1
-     
+
+
 @click.group()
 def main(): 
   pass
+
 
 @click.group()
 def group(): 
   """ group commands """
   pass
+
 
 @group.command()
 @click.argument('group')
@@ -84,8 +110,8 @@ def add(group,user):
   with ldap3.Connection(server, bind_dn, bind_pass, auto_bind=True) as conn:
     conn.modify("cn={},{}".format(group,search_base), {'member': [(MODIFY_ADD, ["cn={},{}".format(user, people_dn)])]})
 # conn.add('cn={},{}'.format(group,search_base), {'memberUid': user })
-
   print(conn.result)
+
 
 @group.command()
 def list(): 
@@ -102,6 +128,7 @@ def list():
     else: 
       for entry in conn.entries:
         print(entry)
+
 
 @group.command()
 @click.argument('group')
@@ -125,6 +152,7 @@ def create(group, gid):
     conn.add("cn={},{}".format(group, search_base), ['top', 'groupOfMembers', 'posixgroup'], { 'cn': [group], 'gidNumber': [gidNumber] } )
     print(conn.result)
 
+
 @group.command()
 @click.argument('group')
 def delete(group):
@@ -138,6 +166,7 @@ def delete(group):
 @click.group()
 def user(): 
   """ user commands """
+
 
 @user.command()
 def list(): 
@@ -154,6 +183,7 @@ def list():
     else: 
       for entry in conn.entries:
         print(entry)
+
 
 @user.command()
 @click.argument('user')
@@ -197,8 +227,12 @@ def edit(user, password, uid, gid, name, shell):
               confirmation_prompt=True)
 @click.option('-n', '--name', prompt='Full Name', required=True)
 @click.option('-i', '--uid', default=None, help='Select the userID')
+<<<<<<< HEAD
 @click.option('-g', '--gid', default="9876", help='Add to this groupID')
 @click.option('-shell', '--shell', default="/bin/bash", help='Use as default shell, ex /bin/bash')
+=======
+@click.option('-g', '--gid', default=None, help='Add to this groupID')
+>>>>>>> 812791c (Rebasing to 763d350.)
 @click.option('-nossh', '--nossh', is_flag=True, default=False, help='Flag to not generate a user-specific ssh-key pair for passwordless ssh.')
 def add(user, password, uid, gid, name, nossh, shell):
   """ add user """
@@ -210,12 +244,15 @@ def add(user, password, uid, gid, name, nossh, shell):
 
   server = ldap3.Server(host, use_ssl=True)
   with ldap3.Connection(server, bind_dn, bind_pass, auto_bind=True) as conn:
+<<<<<<< HEAD
     conn.add("cn={},{}".format(user, search_base), ['inetOrgPerson', 'posixAccount', 'top', 'shadowAccount'], { 'sn': user, 'uid': user, 'uidNumber': uid, 'gidNumber': gid, 'userPassword': password, 'gecos': name, 'homeDirectory': '/home/{}'.format(user), 'displayName': name, 'loginShell': shell } )
+=======
+    conn.add("cn={},{}".format(user, search_base), ['inetOrgPerson', 'posixAccount', 'top', 'shadowAccount'], { 'sn': user, 'uid': user, 'uidNumber': uid, 'gidNumber': gid, 'userPassword': password, 'gecos': name, 'homeDirectory': '/data/{}'.format(user), 'displayName': name, 'loginShell': '/bin/bash' } )
+>>>>>>> 812791c (Rebasing to 763d350.)
   if(conn.result['result'] != 0): 
     print(conn.result)
 
-  if exists('gid', gid) is False:
-
+  if gid_exists(gid) is False:
     click.echo('Creating group')
     conn.add("cn={},{}".format(user, groups_dn), ['top', 'groupOfMembers', 'posixgroup'], { 'cn': [user], 'gidNumber': [gid] } )
     if(conn.result['result'] != 0): 
@@ -224,9 +261,40 @@ def add(user, password, uid, gid, name, nossh, shell):
   homedir='/home/{}/'.format(user)
   os.system("sudo su - "+user+" -c "+" 'ls' 2> /dev/null")
 
-  if not nossh:
-    os.system("sudo su - "+user+" -c "+"' ssh-keygen -t rsa -b 2048 -q -f "+homedir+".ssh/id_rsa -P \"\"' 2> /dev/null")
-    os.system("sudo su - "+user+" -c "+"'mv "+homedir+".ssh/id_rsa.pub "+homedir+".ssh/authorized_keys' 2> /dev/null")
+  if nossh is False:
+    homedir='/data/{}/'.format(user)
+    if os.path.exists(homedir + ".ssh") is False:
+      os.system("sudo su - "+user+" -c "+"' ssh-keygen -t rsa -b 2048 -q -f "+homedir+".ssh/id_rsa -P \"\"' 2> /dev/null")
+      os.system("sudo su - "+user+" -c "+"'mv "+homedir+".ssh/id_rsa.pub "+homedir+".ssh/authorized_keys' 2> /dev/null")
+
+@user.command()
+@click.argument('user_name')
+@click.option('-s', '--shell', default='/bin/bash', help='Specify the login shell for the user')
+def set_shell(user_name, shell):
+    """
+        Set the login shell for a user.
+    """
+    search_base = people_dn
+
+    server = ldap3.Server(host, use_ssl=True)
+    with ldap3.Connection(server, bind_dn, bind_pass, auto_bind=True) as conn:
+        search_filter = f'(uid={user_name})'
+        conn.search(search_base, search_filter, attributes=['uid'])
+        if len(conn.entries) == 0:
+            print(f"User {username} not found in LDAP")
+            return
+
+        user_dn = conn.entries[0].entry_dn
+
+        # Modify the login shell attribute
+        success = conn.modify(user_dn, {'loginShell': [(MODIFY_REPLACE, [shell])]})
+        if success:
+            print(f"Login shell for user {user_name} has been updated to {shell}.")
+        else:
+            print("Failed to update login shell.")
+            print(conn.result)
+
+
 @user.command()
 @click.argument('user')
 def delete(user):
@@ -236,7 +304,21 @@ def delete(user):
   with ldap3.Connection(server, bind_dn, bind_pass, auto_bind=True) as conn:
     conn.delete("cn={},{}".format(user, search_base))
 
-  
+@user.command()
+@click.argument('user')
+@click.argument('new_gid')
+def change_group(user, new_gid):
+    """
+      Change user's group.
+      Parameters:
+        user (User Name)
+        new_gid (Group GID)
+    """
+    search_base = people_dn
+    server = ldap3.Server(host, use_ssl=True)
+    with ldap3.Connection(server, bind_dn, bind_pass, auto_bind=True) as conn:
+        conn.modify("cn={},{}".format(user, search_base),{'gidNumber': [(MODIFY_REPLACE, [new_gid])]})
+    print(conn.result)
   
 main.add_command(group)
 main.add_command(user)

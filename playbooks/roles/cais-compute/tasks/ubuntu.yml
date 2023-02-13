@@ -1,0 +1,112 @@
+---
+- name: Install gflags
+  vars: 
+    package_name: 
+      - libgflags-dev
+      - libgflags2.2
+    package_state: latest
+  include_role: 
+    name: safe_yum
+  ignore_errors: true
+
+- name: Install glog
+  vars: 
+    package_name: 
+      - libgoogle-glog-dev
+    package_state: latest
+  include_role: 
+    name: safe_yum
+  ignore_errors: true
+
+- name: Install go
+  vars: 
+    package_name:
+      - golang
+      - golang-go
+      - golang-doc
+    package_state: latest
+  include_role: 
+    name: safe_yum
+  ignore_errors: true
+
+- name: Install dev tools
+  vars: 
+    package_name: 
+      - build-essential
+    package_state: latest
+  include_role: 
+    name: safe_yum
+  ignore_errors: true
+
+- name: Install openGL/Mesa
+  vars:
+    package_name:
+      - libosmesa6
+      - libosmesa6-dev
+      - libglfw3
+      - libglfw3-dev
+      - libgl1-mesa-glx
+      - libgl1-mesa-dev
+    package_state: latest
+  include_role:
+    name: safe_yum
+  ignore_errors: true
+
+- name: Install libaio for asynchronous I/O
+  vars:
+    package_name:
+      - libaio-dev
+    package_state: latest
+  include_role:
+    name: safe_yum
+  ignore_errors: true
+
+- name: Install Playwrite deps
+  vars:
+    package_name:
+      - libgtk-4-1
+      - libgraphene-1.0-0
+      - libvpx7
+      - libopus0
+      - libgstreamer-plugins-base1.0-0
+      - gstreamer1.0-plugins-base
+      - flite
+      - libavif13
+      - libharfbuzz-icu0
+      - libenchant-2-2
+      - libsecret-1-0
+      - libhyphen0
+      - libmanette-0.2-0
+      - libgstreamer-gl1.0-0
+      - gstreamer1.0-plugins-bad
+    package_state: latest
+  include_role:
+    name: safe_yum
+  ignore_errors: true
+
+# Apptainer installation tasks
+- name: Add Apptainer PPA signing key
+  become: true
+  apt_key:
+    keyserver: keyserver.ubuntu.com
+    id: AFE36534FC6218AE    # “Launchpad PPA for Apptainer”
+    state: present
+    keyring: /etc/apt/trusted.gpg.d/apptainer-archive-keyring.gpg
+
+- name: Add Apptainer repository
+  become: true
+  apt_repository:
+    repo: "ppa:apptainer/ppa"
+    state: present
+    filename: "apptainer"
+
+- name: Update apt cache
+  become: true
+  apt:
+    update_cache: yes
+
+- name: Install Apptainer package
+  become: true
+  apt:
+    name: apptainer
+    state: present

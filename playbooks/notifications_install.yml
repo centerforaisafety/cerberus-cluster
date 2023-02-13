@@ -1,0 +1,65 @@
+- name: Download and configure goslmailer. Copy strigger scripts to their appropriate location
+  hosts: controller, slurm_backup
+  become: true
+  vars_prompt:
+    - name: slack_bot_token
+      prompt: "Enter the slack bot token"
+    - name: app_password
+      prompt: "Enter the app password for the email account"
+    - name: webhook_url
+      prompt: "Enter the slack webhook_url"
+  tasks:
+    - include_role:
+        name: notifications
+
+- name: Set Slurm Triggers
+  hosts: controller
+  become: true
+  become_user: slurm
+  ignore_errors: true
+
+  tasks:
+    - name: Set Slurm Trigger - backup_slurmctld_assumed_control.sh
+      command: strigger --set -C --program=/etc/slurm/triggers/admin_notifications/backup_slurmctld_assumed_control.sh --flags=perm
+
+    - name: Set Slurm Trigger - backup_slurmctld_failure.sh
+      command: strigger --set -B --program=/etc/slurm/triggers/admin_notifications/backup_slurmctld_failure.sh --flags=perm
+
+    - name: Set Slurm Trigger - backup_slurmctld_resumed_operation.sh
+      command: strigger --set -c --program=/etc/slurm/triggers/admin_notifications/backup_slurmctld_resumed_operation.sh --flags=perm
+
+    - name: Set Slurm Trigger - node_down.sh
+      command: strigger --set -d --program=/etc/slurm/triggers/admin_notifications/node_down.sh --flags=perm
+
+    - name: Set Slurm Trigger - node_drain.sh
+      command: strigger --set -D --program=/etc/slurm/triggers/admin_notifications/node_drain.sh --flags=perm
+
+    - name: Set Slurm Trigger - node_fail.sh
+      command: strigger --set -F --program=/etc/slurm/triggers/admin_notifications/node_fail.sh --flags=perm
+
+    - name: Set Slurm Trigger - node_up.sh
+      command: strigger --set -u --program=/etc/slurm/triggers/admin_notifications/node_up.sh --flags=perm
+
+    - name: Set Slurm Trigger - primary_database_failure.sh
+      command: strigger --set -h --program=/etc/slurm/triggers/admin_notifications/primary_database_failure.sh --flags=perm
+
+    - name: Set Slurm Trigger - primary_database_resumed_operation.sh
+      command: strigger --set -H --program=/etc/slurm/triggers/admin_notifications/primary_database_resumed_operation.sh --flags=perm
+
+    - name: Set Slurm Trigger - primary_slurmctld_acct_buffer_full.sh
+      command: strigger --set -e --program=/etc/slurm/triggers/admin_notifications/primary_slurmctld_acct_buffer_full.sh --flags=perm
+
+    - name: Set Slurm Trigger - primary_slurmctld_failure.sh
+      command: strigger --set -a --program=/etc/slurm/triggers/admin_notifications/primary_slurmctld_failure.sh --flags=perm
+
+    - name: Set Slurm Trigger - primary_slurmctld_resumed_control.sh
+      command: strigger --set -b --program=/etc/slurm/triggers/admin_notifications/primary_slurmctld_resumed_control.sh --flags=perm
+
+    - name: Set Slurm Trigger - primary_slurmctld_resumed_operation.sh
+      command: strigger --set -A --program=/etc/slurm/triggers/admin_notifications/primary_slurmctld_resumed_operation.sh --flags=perm
+
+    - name: Set Slurm Trigger - primary_slurmdbd_failure.sh
+      command: strigger --set -g --program=/etc/slurm/triggers/admin_notifications/primary_slurmdbd_failure.sh --flags=perm
+
+    - name: Set Slurm Trigger - primary_slurmdbd_resumed_operation.sh
+      command: strigger --set -G --program=/etc/slurm/triggers/admin_notifications/primary_slurmdbd_resumed_operation.sh --flags=perm

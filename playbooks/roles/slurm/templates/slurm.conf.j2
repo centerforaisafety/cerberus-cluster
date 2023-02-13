@@ -16,15 +16,24 @@ SlurmUser=slurm
 Prolog={{slurm_conf_path}}/prolog.d/*
 SchedulerParameters=nohold_on_prolog_fail
 {% endif %}
+PrologFlags=contain
 SlurmctldLogFile=/var/log/slurm/slurmctld.log
 SlurmdLogFile=/var/log/slurm/slurmd.log
 StateSaveLocation={{ slurm_nfs_path }}/spool/slurm
 SwitchType=switch/none
 TaskPlugin=task/affinity,task/cgroup
+<<<<<<< HEAD
 PrologFlags=contain,serial
+=======
+# Needed to prevent slurm from allocating nodes dedicated to Weka
+TaskPluginParam=SlurmdOffSpec
+#JobContainerType=job_container/tmpfs
+>>>>>>> 812791c (Rebasing to 763d350.)
 InactiveLimit=0
-KillWait=30
-MinJobAge=300
+KillWait=120
+MaxJobCount=100000
+MaxArraySize=10000
+MinJobAge=21600
 SlurmctldTimeout=300
 SlurmdTimeout=600
 Waittime=0
@@ -40,7 +49,12 @@ JobAcctGatherFrequency=30
 JobAcctGatherType=jobacct_gather/linux
 SlurmctldDebug=info
 SlurmdDebug=info
-EnforcePartLimits=NO
+DebugFlags=cgroup
+EnforcePartLimits=ALL
+# Default Memory Per GPU in MB
+DefMemPerGPU=200000
+# Give 2 CPUs per GPU
+DefCpuPerGPU=2
 PropagateResourceLimitsExcept=MEMLOCK
 CommunicationParameters=block_null_hash
 TopologyPlugin=topology/tree
@@ -56,16 +70,55 @@ HealthCheckProgram={{slurm_conf_path}}/prolog.d/healthchecks.sh
 HealthCheckInterval=300
 HealthCheckNodeState=IDLE,CYCLE
 {% endif %}
+MailProg=/bin/goslmailer
+UnkillableStepTimeout=120
+
+# Priority/Fairshare section
+PriorityType=priority/multifactor
+# No decay
+PriorityDecayHalfLife=0
+# Reset usage every month
+PriorityUsageResetPeriod=MONTHLY
+# The larger the job, the greater its job size priority.
+PriorityFavorSmall=no
+
+# FairShareDampeningFactor=2
+
+# The job's age factor reaches 1.0 after waiting in the
+# queue for 2 weeks.
+PriorityMaxAge=14-0
+
+# This next group determines the weighting of each of the
+# components of the Multi-factor Job Priority Plugin.
+# The default value for each of the following is 1.
+PriorityWeightAge=1000
+PriorityWeightFairshare=10000
+PriorityWeightJobSize=1000
+
+PriorityWeightTRES=CPU=10,GRES/gpu=1000
+
 {% if sacct_limits|bool %}
-AccountingStorageTRES=gres/gpu
+AccountingStorageTRES=gres/gpu,gres/gpu:A100
 AccountingStorageEnforce=limits,associations,qos,safe
 JobCompType=jobcomp/none
 TrackWckey=no
 {% endif %}
 
+# Preemption
+PreemptType=preempt/partition_prio
+PreemptMode=REQUEUE,GANG
+
+
+
+{% if (groups['login']| length ) > 0 %}
+NodeName={{ hostvars[groups['login'][0]]['ansible_fqdn'].split('.')[0] }}
+{% endif %}
+
 {% for partition in queues %}
 {% for instance in partition.instance_types %}
-Nodeset={{instance.name}} Feature={{instance.name}}
+Nodeset=cais Feature=cais # NodeSet for CAIS nodes
+NodeSet=schmidt_sciences Feature=schmidt_sciences # NodeSet for Schmidt Sciences nodes
+NodeSet=tamper_resistance Feature=tamper_resistance # NodeSet for Tamper Resistance nodes
 {% endfor %}
 {% endfor %}
 
@@ -75,7 +128,17 @@ Nodeset={{instance.name}} Feature={{instance.name}}
 {% for instance in partition.instance_types %}
 {{ nodesList.append(instance.name)}}
 {%- endfor %}
-PartitionName={{partition.name}} Nodes={{nodesList|join(',')}} Default=YES
+# CAIS partition
+PartitionName=cais_cpu Nodes=cais DefaultTime=02:00:00 MaxTime=2-0 State=UP PriorityTier=3 PreemptMode=OFF #AllowGroups=cais,spar,ubuntu QOS=cpuonly
+PartitionName=cais Nodes=cais DefaultTime=02:00:00 MaxTime=1-0 State=UP PriorityTier=2 PreemptMode=OFF 
+
+# Schmidt Sciences partition
+PartitionName=schmidt_sciences_cpu Nodes=schmidt_sciences DefaultTime=02:00:00 MaxTime=2-0 State=UP PriorityTier=2 PreemptMode=OFF #DenyAccounts=cais,spar QOS=cpuonly
+PartitionName=schmidt_sciences Nodes=schmidt_sciences DefaultTime=02:00:00 MaxTime=1-0 State=UP PriorityTier=1 PreemptMode=OFF  
+
+# Tamper Resistance partition
+PartitionName=tamper_resistance_cpu Nodes=tamper_resistance DefaultTime=02:00:00 MaxTime=2-0 State=UP PriorityTier=3 PreemptMode=OFF #DenyAccounts=cais,spar,schmidt_sciences QOS=cpuonly
+PartitionName=tamper_resistance Nodes=tamper_resistance DefaultTime=02:00:00 MaxTime=1-0 State=UP PriorityTier=1 PreemptMode=OFF  
 {% else %}
 {% set nodesList = [] %}
 {% for instance in partition.instance_types %}

@@ -26,9 +26,11 @@
 - name: Creates a commented cron file under /etc/cron.d
   cron:
     name: slurm autoscaling
-    minute: "#*"
+    minute: "*"
     user: '{{ ansible_user }}'
-    job: "#/opt/oci-hpc/autoscaling/crontab/autoscale_slurm.sh >> /opt/oci-hpc/logs/crontab_slurm_`date '+\\%Y\\%m\\%d'`.log 2>&1"
+    job: "/opt/oci-hpc/autoscaling/crontab/autoscale_slurm.sh >> /opt/oci-hpc/logs/crontab_slurm_`date '+\\%Y\\%m\\%d'`.log 2>&1"
+    state: present
+    disabled: true
   when: not autoscaling | bool
 
 
@@ -37,7 +39,9 @@
     name: slurm monitoring
     minute: "*"
     user: '{{ ansible_user }}'
-    job: "#source /opt/oci-hpc/monitoring/env; /opt/oci-hpc/monitoring/monitor_slurm.sh >> /opt/oci-hpc/monitoring/monitor_slurm_`date '+\\%Y\\%m\\%d'`.log 2>&1"
+    job: "source /opt/oci-hpc/monitoring/env; /opt/oci-hpc/monitoring/monitor_slurm.sh >> /opt/oci-hpc/monitoring/monitor_slurm_`date '+\\%Y\\%m\\%d'`.log 2>&1"
+    state: present
+    disabled: true
   when: not autoscaling_monitoring | bool
 
 - name: Create a commented OCI monitoring cron file under /etc/cron.d
@@ -45,5 +49,7 @@
     name: OCI monitoring
     minute: "*"
     user: '{{ ansible_user }}'
-    job: "#source /opt/oci-hpc/monitoring/env; /opt/oci-hpc/monitoring/monitor_oci.sh >> /opt/oci-hpc/monitoring/monitor_oci_`date '+\\%Y\\%m\\%d'`.log 2>&1"
+    job: "source /opt/oci-hpc/monitoring/env; /opt/oci-hpc/monitoring/monitor_oci.sh >> /opt/oci-hpc/monitoring/monitor_oci_`date '+\\%Y\\%m\\%d'`.log 2>&1"
+    state: present
+    disabled: true
   when: not autoscaling_monitoring | bool

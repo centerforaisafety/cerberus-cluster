@@ -68,6 +68,7 @@
     group: munge
     mode: '0400'
   notify: restart munge
+  when: not ansible_check_mode
 
 - name: restart munge
   become: true
@@ -127,10 +128,12 @@
   with_items: "{{ play_hosts | difference(groups['controller'])  | difference(groups['slurm_backup']) | difference(groups['login'])| difference(groups['monitoring'])}}"
   run_once: true
   register: racks_to_add_temp_results
+  when: not ansible_check_mode
 
 - name: Make a list of racks to add
   set_fact: racks_to_add="{{racks_to_add_temp_results.results | map(attribute='ansible_facts.racks_to_add_temp') | list | unique}}"
   run_once: true
+  when: not ansible_check_mode
 
 - name: Get hostnames
   set_fact:
@@ -142,6 +145,7 @@
 - name: Make a list of nodes to add
   set_fact: nodes_to_add="{{nodes_to_add_temp_results.results | map(attribute='ansible_facts.nodes_to_add_temp') | list}}"
   run_once: true
+  when: not ansible_check_mode
 
 - name: Get current nodes in Switch
   shell: "cat {{ slurm_conf_path }}/topology.conf | grep \"{{item}}\" | grep Nodes="
@@ -158,7 +162,8 @@
   register: switch_hostlist
   delegate_to: 127.0.0.1
   with_items: "{{nodes_in_switch.results}}"
-  when: item.rc == 0
+  when: not ansible_check_mode and (item.rc == 0)
+  
 
 - name: Get hostlist if switch exists
   vars:
@@ -168,7 +173,7 @@
   delegate_to: 127.0.0.1
   with_items: "{{switch_hostlist.results}}"
   run_once: true
-  when: item.item.rc == 0
+  when: not ansible_check_mode and (item.item.rc == 0)
 
 - name: Get hostlist if switch does not exists
   vars:
@@ -178,23 +183,23 @@
   delegate_to: 127.0.0.1
   with_items: "{{switch_hostlist.results}}"
   run_once: true
-  when: item.item.rc > 0
+  when: not ansible_check_mode and (item.item.rc > 0)
 
-- name: get Nodes on switch
+- name: Get Nodes on switch
   set_fact:
     nodes_on_switches: "{{nodes_on_switches | default({}) | combine({item.item.item.item : item.stdout } ) }}"
   with_items: "{{rack_hostlist1.results}}"
   run_once: true
   delegate_to: 127.0.0.1
-  when: item.item.item.rc== 0
+  when: not ansible_check_mode and (item.item.item.rc== 0)
 
-- name: get Nodes on switch
+- name: Get Nodes on switch
   set_fact:
     nodes_on_switches: "{{nodes_on_switches | default({}) | combine({item.item.item.item : item.stdout } ) }}"
   with_items: "{{rack_hostlist2.results}}"
   run_once: true
   delegate_to: 127.0.0.1
-  when: item.item.item.rc > 0
+  when: not ansible_check_mode and (item.item.item.rc > 0)
 
 - name: Add the nodes in the rack switches
   become: true

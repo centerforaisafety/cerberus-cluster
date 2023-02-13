@@ -180,7 +180,7 @@
 #   debug:
 #     msg: "replacing line SwitchName={{switchnames[item]}}\\sNodes.* with SwitchName={{switchnames[item]}} Nodes={{nodes_on_switch_condensed[item]}}"
 #   with_items: "{{unreachable_slurm_nodes}}"
-#   ignore_errors: yes
+#   ignore_errors: true
 #   when: ( not switchnames[item] is match("inactive-.*") ) and ( ( nodes_on_switch_condensed[item] | length ) > 1 )
 #   run_once: true
 #   delegate_to: 127.0.0.1
@@ -193,9 +193,13 @@
     state: present
   with_items: "{{unreachable_slurm_nodes}}"
   ignore_errors: true
+<<<<<<< HEAD
   when:
     - not (switchnames[item] is match("inactive-.*"))
     - (nodes_on_switch_condensed[item] | default([]) | length) > 1
+=======
+  when: ( not switchnames[item] is match("inactive-.*") ) and ( ( nodes_on_switch_condensed[item] | length ) > 1 )
+>>>>>>> 812791c (Rebasing to 763d350.)
   run_once: true
   delegate_to: 127.0.0.1
 
@@ -203,7 +207,7 @@
   become: true
   command: "scontrol delete nodename={{ item }}"
   ignore_errors: true
-  ignore_unreachable: True
+  ignore_unreachable: true
   with_items: "{{unreachable_slurm_nodes}}"
   delegate_to: 127.0.0.1
   when: ('controller' in group_names)

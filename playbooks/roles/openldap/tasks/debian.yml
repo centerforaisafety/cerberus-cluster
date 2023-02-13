@@ -144,12 +144,14 @@
       with_items:
         - config.ldif
       changed_when: false
+      when: not ansible_check_mode
 
     - name: Render OpenLDAP configuration - local
       template:
         src: 'debian_local.ldif.j2'
         dest: '/tmp/local.ldif'
       changed_when: false
+      when: not ansible_check_mode
 
     - name: Copy OpenLDAP overlay configurations - ppolicy
       copy:

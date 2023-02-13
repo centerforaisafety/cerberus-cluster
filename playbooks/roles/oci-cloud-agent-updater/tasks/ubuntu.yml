@@ -2,7 +2,7 @@
 - name: Hold Oracle cloud-agent
   shell: "sudo snap refresh --hold=forever oracle-cloud-agent"
   when : ansible_distribution == 'Ubuntu'
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: Check if the updater file exists
   stat:
@@ -25,7 +25,11 @@
   register: restart_cloud_agent_updater
   until: restart_cloud_agent_updater is not failed
   when: updater_exist.stat.exists
+<<<<<<< HEAD
   ignore_errors: yes
+=======
+  ignore_errors: true
+>>>>>>> 812791c (Rebasing to 763d350.)
 
 # oracle-cloud-agent runs by default on ubuntu 
 # However it doesn't have osms (OS Management Service) which we had to disable on Oracle Linux

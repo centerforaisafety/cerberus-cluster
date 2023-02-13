@@ -43,7 +43,58 @@
     - etc-hosts
     - boot-volume
     - mpivars
+<<<<<<< HEAD
     - oom-adjust
+=======
+    - iptables
+
+- name: Disable dynamic MOTD
+  hosts: all
+  become: true
+  tasks:
+    - name: Find all files in /etc/update-motd.d
+      find:
+        paths: /etc/update-motd.d
+        recurse: no
+      register: motd_files
+    - name: Remove execute permissions for all files in /etc/update-motd.d
+      file:
+        path: "{{ item.path }}"
+        mode: 'u-x,g-x,o-x'
+      loop: "{{ motd_files.files }}"
+    - name: Ensure 50-landscape-sysinfo is a symbolic link
+      stat:
+        path: /etc/update-motd.d/50-landscape-sysinfo
+      register: motd_file
+    - name: Remove the symbolic link 50-landscape-sysinfo
+      file:
+        path: /etc/update-motd.d/50-landscape-sysinfo
+        state: absent
+      when: motd_file.stat.islnk is defined and motd_file.stat.islnk
+      
+- name: Configure static MOTD
+  hosts: login
+  become: true
+  tasks:
+    - name: Ensure static MOTD
+      copy:
+        content: |
+          ⠀⠀⠀⠀⢀⡤⢂⣴⠾⠛⠷⢶⣤⡀⠀⠀⠀
+          ⠀⠀⠀⣴⠟⣁⣉⣁⣀⡀⠈⢶⡌⠻⢦⠀⠀
+          ⠀⠀⣸⡏⠜⠋⣩⡭⠉⠛⢷⢸⡇⠸⣦⡁⠀
+          ⠀⠀⢿⡄⠀⢰⡟⠀⠀⠀⠀⣼⠇⠀⠘⣷⠀
+          ⠀⠀⢈⠻⡆⢸⡇⢷⣤⣀⣚⣋⣠⡔⣸⡏⠀
+          ⠀⠀⠀⠳⣦⡘⠷⡀⠈⠉⢉⣉⢉⣴⠟⠀⠀
+          ⠀⠀⠀⠀⠈⠛⠷⢶⣤⡶⠟⠡⠚⠁⠀⠀⠀
+
+          Welcome to the CAIS Compute Cluster!
+
+          We've set the default allocated storage per user to be 500 GB.
+
+          Feel free to reach out on slack for any questions and have fun!
+        dest: /etc/motd
+        mode: '0644'
+>>>>>>> 812791c (Rebasing to 763d350.)
 
 - hosts: all
   become: true
@@ -76,20 +127,24 @@
   become: true
   vars:
     tmp_home: "/tmp/home_tmp/"
-    remote_path: "{% if create_fss|bool %}/home{% else%}{{nfs_source_path}}{% endif %}"
+    remote_path: "{% if create_home_fss|bool %}/home{% else%}{{home_fss_source_path}}{% endif %}"
   tasks:
     - include_role:
         name: nfs-client
       vars:
         local_path: "{{tmp_home}}"
-        export_host: "{{ nfs_source_IP }}"
+        export_host: "{{ home_fss_source_IP }}"
         export_path: "{{ remote_path }}"
         options: ""
         lock: "none"
+<<<<<<< HEAD
       when: add_nfs|bool and home_fss|bool
+=======
+      when: home_fss|bool 
+>>>>>>> 812791c (Rebasing to 763d350.)
     - include_role:
         name: fss-home
-      when: add_nfs|bool and home_fss|bool
+      when: home_fss|bool
 
 - hosts: controller, slurm_backup, login, monitoring
   become: true
@@ -104,10 +159,11 @@
         name: nfs-client
       vars:
         local_path: "/home"
-        export_host: "{{ nfs_source_IP }}"
-        export_path: "{% if create_fss|bool %}/home{% else%}{{nfs_source_path}}/home{% endif %}"
+        export_host: "{{ home_fss_source_IP }}"
+        export_path: "{% if create_home_fss|bool %}/home{% else%}{{home_fss_source_path}}/home{% endif %}"
         options: ""
         lock: "none"
+<<<<<<< HEAD
       when: add_nfs|bool and home_fss|bool and not (manual_multiple_mount_target|default(false)|bool)
 
 - hosts: controller, slurm_backup, login, compute, monitoring
@@ -140,6 +196,12 @@
         lock: "none"
       when: add_nfs|default(false)|bool and create_fss|bool and mount_target_count > 1 and manual_multiple_mount_target|default(false)|bool
 
+=======
+      when: home_fss|bool
+    - include_role: 
+        name: passwords
+
+>>>>>>> 812791c (Rebasing to 763d350.)
 - hosts: controller
   become: true
   tasks:
@@ -171,7 +233,20 @@
         options: "defaults,noatime,bg,timeo=100,ac,actimeo=120,nocto,rsize=1048576,wsize=1048576,nolock,local_lock={{ lock }},mountproto=tcp,sec=sys,_netdev"
         lock: "all"
       when: home_nfs|bool and (not home_fss|bool)
+<<<<<<< HEAD
 
+=======
+    - include_role:
+        name: nfs-client
+      vars:
+        local_path: "/home"
+        export_host: "{{ home_fss_source_IP }}"
+        export_path: "{% if create_home_fss|bool %}/home{% else%}{{home_fss_source_path}}/home{% endif %}"
+        options: ""
+        lock: "none"
+      when: home_nfs|bool and home_fss|bool
+ 
+>>>>>>> 812791c (Rebasing to 763d350.)
 - hosts: controller
   become: true
   vars: 
@@ -304,6 +379,14 @@
       when: autoscaling_monitoring|default(false)|bool
     - include_role: 
         name: cron
+    - include_role:
+        name: billing
+      when: billing|default(false)|bool
+
+- hosts: controller
+  tasks:
+    - include_role:
+        name: backups
 
 - hosts: compute
   become: true
@@ -349,6 +432,7 @@
         name: slurm
       when: slurm|default(false)|bool
 
+<<<<<<< HEAD
 - hosts: controller, slurm_backup
   tasks:
     - include_role:
@@ -371,3 +455,19 @@
         export_path: "{{ lfs_source_path }}"
         lock: "none"
       when: add_lfs|default(false)|bool
+=======
+- hosts: all
+  tasks:
+    - include_role:
+        name: cais-all
+
+- hosts: controller,login
+  tasks:
+    - include_role:
+        name: cais-controller-login
+
+- hosts: compute
+  tasks: 
+    - include_role:
+        name: cais-compute
+>>>>>>> 812791c (Rebasing to 763d350.)

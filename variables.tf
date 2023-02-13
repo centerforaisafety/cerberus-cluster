@@ -444,8 +444,20 @@ variable "home_nfs" {
   type = bool
   }
 variable "home_fss" { 
-  default = false
+  default = true
   type = bool
+  }
+variable "create_home_fss" { 
+  default = true 
+  type = bool
+  }
+variable "home_fss_source_IP" { 
+  default = ""
+  type = string
+  }
+variable "home_fss_source_path" { 
+  default = "/home"
+  type = string
   }
 variable "configure" { 
   default = true
@@ -589,6 +601,26 @@ variable "autoscaling_mysql_service" {
 variable "monitoring_shape_name" {
   type    = string
   default = "MySQL.VM.Standard.E3.1.16GB"
+} 
+
+variable "billing" { 
+  type= bool
+  default = false
+}
+
+variable "billing_mysql_db_admin_username" { 
+  type = string
+  default = "opc"
+}
+
+variable "billing_mysql_db_admin_password" { 
+  type = string
+  default = "Billing1234!"
+}
+
+variable "billing_shape_name" { 
+  type = string
+  default = "MySQL.VM.Standard.E4.1.8GB"
 }
 
 variable "admin_username" {
