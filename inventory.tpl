@@ -77,3 +77,7 @@ api_fingerprint = ${api_fingerprint}
 api_user_ocid = ${api_user_ocid}
 sacct_limits=${sacct_limits}
 use_compute_agent=${use_compute_agent}
+billing=${billing}
+billing_mysql_db_admin_username=${billing_mysql_db_admin_username}
+billing_mysql_db_admin_password=${billing_mysql_db_admin_password}
+billing_mysql_ip=${billing_mysql_ip}
