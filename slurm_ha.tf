@@ -253,6 +253,10 @@ resource "null_resource" "cluster_backup" {
       api_fingerprint = var.api_fingerprint,
       api_user_ocid = var.api_user_ocid,
       healthchecks = var.healthchecks    
+      billing = var.billing,
+      billing_mysql_db_admin_username = var.billing_mysql_db_admin_username,
+      billing_mysql_db_admin_password = var.billing_mysql_db_admin_password,
+      billing_mysql_ip = var.billing ? oci_mysql_mysql_db_system.billing_mysql_db_system[0].ip_address : ""
       })
 
     destination   = "/opt/oci-hpc/playbooks/inventory"
@@ -402,6 +406,10 @@ resource "null_resource" "cluster_backup" {
       numa_nodes_per_socket = var.numa_nodes_per_socket,
       percentage_of_cores_enabled = var.percentage_of_cores_enabled,
       healthchecks = var.healthchecks
+      billing = var.billing,
+      billing_mysql_db_admin_username = var.billing_mysql_db_admin_username,
+      billing_mysql_db_admin_password = var.billing_mysql_db_admin_password,
+      billing_mysql_ip = var.billing ? oci_mysql_mysql_db_system.billing_mysql_db_system[0].ip_address : ""
       })
 
     destination   = "/opt/oci-hpc/conf/variables.tf"

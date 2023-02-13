@@ -222,6 +222,26 @@ variable "monitoring_shape_name" {
   default = "MySQL.VM.Standard.E3.1.16GB"
 } 
 
+variable "billing" { 
+  type= bool
+  default = false
+}
+
+variable "billing_mysql_db_admin_username" { 
+  type = string
+  default = "opc"
+}
+
+variable "billing_mysql_db_admin_password" { 
+  type = string
+  default = "Billing1234!"
+}
+
+variable "billing_shape_name" { 
+  type = string
+  default = "MySQL.VM.Standard.E4.1.8GB"
+}
+
 variable "admin_username" { 
   type = string
   default = "admin"

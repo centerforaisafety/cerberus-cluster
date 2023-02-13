@@ -80,3 +80,7 @@ use_compute_agent=${use_compute_agent}
 zone_name=${zone_name}
 dns_entries=${dns_entries}
 healthchecks=${healthchecks}
+billing=${billing}
+billing_mysql_db_admin_username=${billing_mysql_db_admin_username}
+billing_mysql_db_admin_password=${billing_mysql_db_admin_password}
+billing_mysql_ip=${billing_mysql_ip}
