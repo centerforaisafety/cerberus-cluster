@@ -1,0 +1,44 @@
+---
+- name: Install zsh
+  vars: 
+    package_name: 
+      - zsh
+    package_state: latest
+    package_repo: "epel,ol7_developer_EPEL"
+  include_role: 
+    name: safe_yum
+  ignore_errors: true
+
+# Install git
+- name: Install package that contains newer git
+  vars: 
+    package_name: 
+      - http://opensource.wandisco.com/centos/7/git/x86_64/wandisco-git-release-7-2.noarch.rpm
+    package_state: latest
+    package_repo: "epel,ol7_developer_EPEL"
+  include_role: 
+    name: safe_yum
+  ignore_errors: true
+- name: Install newer git
+  vars: 
+    package_name: 
+      - git
+    package_state: latest
+    package_repo: "epel,ol7_developer_EPEL"
+  include_role: 
+    name: safe_yum
+  ignore_errors: true
+
+# Move ksplice
+- name: copy ksplice
+  become: true
+  copy: 
+    src: /etc/cron.d/ksplice
+    dest: /root/
+  when: "'/etc/cron.d/ksplice' is file"
+- name: Remove file (delete file)
+  become: true
+  file:
+    path: /etc/cron.d/ksplice
+    state: absent
+  when: "'/etc/cron.d/ksplice' is file"

@@ -1040,6 +1040,12 @@ variables:
     description: "Enable Limits for the Slurm cluster When enabled, users will not be able to submit jobs of the right limits are not set"
     visible: ${slurm}
 
+  pam:
+    type: boolean
+    title: "Enable PAM"
+    default: false
+    description: "Enable PAM for the Slurm cluster. When PAM is enabled, users that are not in the sudo group will not be able to SSH into the compute nodes unless they have an active job in Slurm."
+
   monitoring:
     type: boolean
     title: "Install HPC Cluster Monitoring Tools"
