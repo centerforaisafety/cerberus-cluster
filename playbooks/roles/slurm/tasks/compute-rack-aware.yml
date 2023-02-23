@@ -201,6 +201,7 @@
   command: "scontrol show hostlistsorted {{inactive_hostlist.stdout_lines | difference(nodes_to_add) | join(',')  }}"
   register: inactive_hostlist_condensed
   delegate_to: 127.0.0.1
+  when: not ansible_check_mode
 
 - name: remove nodes from inactive
   become: true
@@ -215,6 +216,8 @@
   run_once: true
   delegate_to: 127.0.0.1
   notify: reconfigure slurm
+  when: not ansible_check_mode
+
 
 - name: Get racks in the Cluster
   block:
@@ -263,16 +266,18 @@
   until: node_state.stdout.find("failure") == -1
   retries: 10
   delay: 5
+  when: not ansible_check_mode
 
 - set_fact:
     node_state2={{ node_state.stdout }}
+  when: not ansible_check_mode
 
 - name: Update node state on bastion
   become: true
   command: scontrol update nodename={{ ansible_hostname }} state=RESUME
-  when: node_state2 != "idle" and node_state2 != "alloc"
   register: result
   retries: 10
   delay: 5
   until: result is not failed
   delegate_to: 127.0.0.1
+  when: not ansible_check_mode and (node_state2 != "idle" and node_state2 != "alloc")
