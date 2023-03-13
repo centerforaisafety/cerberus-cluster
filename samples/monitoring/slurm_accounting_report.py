@@ -38,6 +38,7 @@ while now > end:
     date_time_list.append(now.strftime("%Y-%m-%d-%H:%M:%S"))
     now = now - datetime.timedelta(hours=1)
 
+
 def add_or_remove_to_dict(returned_val, date_time_list, index, add=False, remove=False):
     """
     Updates the global job_dict to either add or remove elements. 
@@ -100,6 +101,7 @@ def add_or_remove_to_dict(returned_val, date_time_list, index, add=False, remove
         job_dict["dates"][date_time_list[index]] = total_gpus
     elif remove:
         del job_dict["dates"][date_time_list[index]]
+
 
 my_file = Path(save_file)
 
