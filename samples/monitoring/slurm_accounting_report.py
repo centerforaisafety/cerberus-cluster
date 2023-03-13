@@ -106,12 +106,13 @@ def add_or_remove_to_dict(returned_val, date_time_list, index, add=False, remove
 my_file = Path(save_file)
 
 # if it exists just update the latest one and remove the old one.
+# Assumes it's been working hourly this breaks if it gets reset or misses more time.
 if my_file.is_file():
     # Remove old entries.
     older_end = (end - datetime.timedelta(hours=1)).strftime("%Y-%m-%d-%H:%M:%S")
     command = ("sacct -a -S {} ".format(older_end) +
                 "-E {} -P ".format(end.strftime("%Y-%m-%d-%H:%M:%S")) +
-                "--noconvert --noheader "
+                "--noconvert --noheader --truncate --state=ca,dl,cd,f,r "
                 "-o 'user,JobID,Account,NCPUs,ReqMem,elapsedraw,cputimeraw,alloctres' " 
         )
     returned_val = subprocess.check_output(command, shell=True).decode("utf-8").split("\n")[::3]
@@ -121,7 +122,7 @@ if my_file.is_file():
     hour_less_than_now = (now - datetime.timedelta(hours=1)).strftime("%Y-%m-%d-%H:%M:%S")
     command = ("sacct -a -S {} ".format(hour_less_than_now) +
                 "-E {} -P ".format(now.strftime("%Y-%m-%d-%H:%M:%S")) +
-                "--noconvert --noheader "
+                "--noconvert --noheader --truncate --state=ca,dl,cd,f,r "
                 "-o 'user,JobID,Account,NCPUs,ReqMem,elapsedraw,cputimeraw,alloctres' " 
         )
     returned_val = subprocess.check_output(command, shell=True).decode("utf-8").split("\n")[::3]
@@ -133,7 +134,7 @@ else:
     for index, date_time_val in enumerate(date_time_list[:-1]):
         command = ("sacct -a -S {} ".format(date_time_list[index+1]) +
                 "-E {} -P ".format(date_time_list[index]) +
-                "--noconvert --noheader "
+                "--noconvert --noheader --truncate --state=ca,dl,cd,f,r "
                 "-o 'user,JobID,Account,NCPUs,ReqMem,elapsedraw,cputimeraw,alloctres' " 
         )
 
