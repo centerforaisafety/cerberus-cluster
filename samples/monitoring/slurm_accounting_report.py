@@ -115,7 +115,11 @@ if my_file.is_file():
                 "--noconvert --noheader --truncate --state=ca,dl,cd,f,r "
                 "-o 'user,JobID,Account,NCPUs,ReqMem,elapsedraw,cputimeraw,alloctres' " 
         )
-    returned_val = subprocess.check_output(command, shell=True).decode("utf-8").split("\n")[::3]
+    returned_val = subprocess.check_output(command, shell=True).decode("utf-8")
+    returned_val = returned_val.split("\n")
+    returned_val = [x for x in returned_val if not x.startswith("|")]
+    returned_val = [x for x in returned_val if not x.startswith("          ")]
+
     add_or_remove_to_dict(returned_val, [older_end], 0, remove=True)
 
     # Add new entries.
@@ -125,7 +129,11 @@ if my_file.is_file():
                 "--noconvert --noheader --truncate --state=ca,dl,cd,f,r "
                 "-o 'user,JobID,Account,NCPUs,ReqMem,elapsedraw,cputimeraw,alloctres' " 
         )
-    returned_val = subprocess.check_output(command, shell=True).decode("utf-8").split("\n")[::3]
+    returned_val = subprocess.check_output(command, shell=True).decode("utf-8")
+    returned_val = returned_val.split("\n")
+    returned_val = [x for x in returned_val if not x.startswith("|")]
+    returned_val = [x for x in returned_val if not x.startswith("          ")]
+
 
     add_or_remove_to_dict(returned_val, [hour_less_than_now], 0, add=True)
 
@@ -139,8 +147,11 @@ else:
         )
 
         returned_val = subprocess.check_output(command, shell=True).decode("utf-8")
-        # sacct returns almost triplicate results so instead only select just one.
-        returned_val = returned_val.split("\n")[::3]
+        # sacct returns a lot of duplicates filter them.
+        returned_val = returned_val.split("\n")
+        returned_val = [x for x in returned_val if not x.startswith("|")]
+        returned_val = [x for x in returned_val if not x.startswith("          ")]
+
 
         add_or_remove_to_dict(returned_val, date_time_list, index+1, add=True)
 
