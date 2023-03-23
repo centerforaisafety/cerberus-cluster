@@ -2,10 +2,12 @@ import datetime
 import json
 import subprocess
 from pathlib import Path
-
+from tqdm import tqdm
 
 #Example command we want to extract
 #sacct -a -S 2023-02-28-12:00:00 -E  2023-02-28-13:00:00 -P --noconvert --noheader -o 'user,JobID,Account,NCPUs,ReqMem,elapsedraw,cputimeraw,alloctres'
+
+TOTAL_GPUS = 288
 
 date_time_list = []
 job_dict = {
@@ -15,14 +17,14 @@ job_dict = {
     }
 save_file = "/home/opc/logs/slurm_usage.json"
 
-def roundTime(dt=None, roundTo=60):
+def roundTime(dt=None, roundTo=3600):
     """
     Round a datetime object to any time lapse in seconds.
     Source: https://stackoverflow.com/questions/3463930/how-to-round-the-minute-of-a-datetime-object/10854034#10854034
     Author: Thierry Husson 2012 - Use it as you want but don't blame me.
     Args:
         dt : datetime.datetime object, default now.
-        roundTo : Closest number of seconds to round to, default 1 minute.    
+        roundTo : Closest number of seconds to round to, default 1 hour.    
     Returns:
         datetime object rounded to whatever value.
     """
@@ -55,7 +57,8 @@ def add_or_remove_to_dict(returned_val, date_time_list, index, add=False, remove
         print("Error in use of add or remove.")
         exit()
 
-    total_gpus = 0
+    total_gpu_usage = {}
+    # node: % utilization == time / 3600
     for item in returned_val:
         if not item:
             continue
@@ -68,12 +71,16 @@ def add_or_remove_to_dict(returned_val, date_time_list, index, add=False, remove
         elapsed_time = int(slurm_data[5])
         alloc_tres = slurm_data[7]
         alloc_tres = alloc_tres.split(",")
+        node_name = slurm_data[8]
+        start_time = datetime.datetime.strptime(slurm_data[9], "%Y-%m-%dT%H:%M:%S")
+        end_time = datetime.datetime.strptime(slurm_data[10], "%Y-%m-%dT%H:%M:%S")
+        total_seconds_run = (end_time - start_time).seconds
+
         # ignore the cpu jobs on the cluster for now
         if len(alloc_tres) < 4:
             continue
         num_gpus = int(alloc_tres[2][alloc_tres[2].find("=")+1:])
         num_nodes = int(alloc_tres[3][alloc_tres[3].find("=")+1:])
-        total_gpus += num_gpus
         if add:
             job_dict["job_ids"][job_id] = {
                 "user": user,
@@ -90,6 +97,10 @@ def add_or_remove_to_dict(returned_val, date_time_list, index, add=False, remove
                 job_dict["users"][user] = elapsed_time * num_gpus
             else:
                 job_dict["users"][user] += elapsed_time * num_gpus
+            if total_gpu_usage.get(node_name) is None:
+                total_gpu_usage[node_name] = total_seconds_run
+            else:
+                total_gpu_usage[node_name] += total_seconds_run
         elif remove:
             del job_dict["job_ids"][job_id]
             user_stats = job_dict["users"].get(user)
@@ -97,8 +108,13 @@ def add_or_remove_to_dict(returned_val, date_time_list, index, add=False, remove
                 job_dict["users"][user] -= elapsed_time * num_gpus
             if job_dict["users"][user] < 0:
                 del job_dict["users"][user]
+
     if add:
-        job_dict["dates"][date_time_list[index]] = total_gpus
+        total_gpu_time = 0
+        for key in total_gpu_usage:
+            total_gpu_time += total_gpu_usage[key] / 3600
+        # total_gpu_time /= TOTAL_GPUS
+        job_dict["dates"][date_time_list[index]] = total_gpu_time
     elif remove:
         del job_dict["dates"][date_time_list[index]]
 
@@ -108,17 +124,22 @@ my_file = Path(save_file)
 # if it exists just update the latest one and remove the old one.
 # Assumes it's been working hourly this breaks if it gets reset or misses more time.
 if my_file.is_file():
+    # TODO update the formatting so it's like
+    # {dates:[], usage:[]}
+
+    with open(save_file) as f:
+        json_dict = json.load(f)
+
     # Remove old entries.
     older_end = (end - datetime.timedelta(hours=1)).strftime("%Y-%m-%d-%H:%M:%S")
     command = ("sacct -a -S {} ".format(older_end) +
                 "-E {} -P ".format(end.strftime("%Y-%m-%d-%H:%M:%S")) +
-                "--noconvert --noheader --truncate --state=ca,dl,cd,f,r "
-                "-o 'user,JobID,Account,NCPUs,ReqMem,elapsedraw,cputimeraw,alloctres' " 
+                "--noconvert --noheader --truncate --state=r "
+                "-o 'user,JobID,Account,NCPUs,ReqMem,elapsedraw,cputimeraw,alloctres,NodeList,Start,End' " 
         )
     returned_val = subprocess.check_output(command, shell=True).decode("utf-8")
     returned_val = returned_val.split("\n")
     returned_val = [x for x in returned_val if not x.startswith("|")]
-    returned_val = [x for x in returned_val if not x.startswith("          ")]
 
     add_or_remove_to_dict(returned_val, [older_end], 0, remove=True)
 
@@ -126,32 +147,28 @@ if my_file.is_file():
     hour_less_than_now = (now - datetime.timedelta(hours=1)).strftime("%Y-%m-%d-%H:%M:%S")
     command = ("sacct -a -S {} ".format(hour_less_than_now) +
                 "-E {} -P ".format(now.strftime("%Y-%m-%d-%H:%M:%S")) +
-                "--noconvert --noheader --truncate --state=ca,dl,cd,f,r "
-                "-o 'user,JobID,Account,NCPUs,ReqMem,elapsedraw,cputimeraw,alloctres' " 
+                "--noconvert --noheader --truncate --state=r "
+                "-o 'user,JobID,Account,NCPUs,ReqMem,elapsedraw,cputimeraw,alloctres,NodeList,Start,End' " 
         )
     returned_val = subprocess.check_output(command, shell=True).decode("utf-8")
     returned_val = returned_val.split("\n")
     returned_val = [x for x in returned_val if not x.startswith("|")]
-    returned_val = [x for x in returned_val if not x.startswith("          ")]
-
 
     add_or_remove_to_dict(returned_val, [hour_less_than_now], 0, add=True)
 
 # Otherwise just grab all of the entries for the past month.
 else:
-    for index, date_time_val in enumerate(date_time_list[:-1]):
+    for index, date_time_val in enumerate(tqdm(date_time_list[:-1])):
         command = ("sacct -a -S {} ".format(date_time_list[index+1]) +
                 "-E {} -P ".format(date_time_list[index]) +
-                "--noconvert --noheader --truncate --state=ca,dl,cd,f,r "
-                "-o 'user,JobID,Account,NCPUs,ReqMem,elapsedraw,cputimeraw,alloctres' " 
+                "--noconvert --noheader --truncate --state=r "
+                "-o 'user,JobID,Account,NCPUs,ReqMem,elapsedraw,cputimeraw,alloctres,NodeList,Start,End' " 
         )
 
         returned_val = subprocess.check_output(command, shell=True).decode("utf-8")
         # sacct returns a lot of duplicates filter them.
         returned_val = returned_val.split("\n")
         returned_val = [x for x in returned_val if not x.startswith("|")]
-        returned_val = [x for x in returned_val if not x.startswith("          ")]
-
 
         add_or_remove_to_dict(returned_val, date_time_list, index+1, add=True)
 
