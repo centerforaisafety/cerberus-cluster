@@ -8,3 +8,23 @@
   include_role: 
     name: safe_yum
   ignore_errors: true
+
+# Install git
+- name: Install package that contains newer git
+  vars: 
+    package_name: 
+      - http://opensource.wandisco.com/centos/7/git/x86_64/wandisco-git-release-7-2.noarch.rpm
+    package_state: latest
+    package_repo: "epel,ol7_developer_EPEL"
+  include_role: 
+    name: safe_yum
+  ignore_errors: true
+- name: Install newer git
+  vars: 
+    package_name: 
+      - git
+    package_state: latest
+    package_repo: "epel,ol7_developer_EPEL"
+  include_role: 
+    name: safe_yum
+  ignore_errors: true
