@@ -28,3 +28,35 @@
   include_role: 
     name: safe_yum
   ignore_errors: true
+
+# Install snap
+- name: Install snapd
+  vars: 
+    package_name: 
+      - snapd
+    package_state: latest
+    package_repo: "epel,ol7_developer_EPEL"
+  include_role: 
+    name: safe_yum
+  ignore_errors: true
+
+- name: Stop snapd socket if it exists
+  become: true
+  ansible.builtin.systemd:
+    name: snapd.socket
+    state: stopped
+- name: Enable service snapd
+  become: true
+  ansible.builtin.systemd:
+    name: snapd.service
+    state: started
+    enabled: true
+    masked: no
+- name: Create a symbolic link for snap
+  become: true
+  ansible.builtin.file:
+    src: /var/lib/snapd/snap
+    dest: /snap
+    owner: root
+    group: root
+    state: link
