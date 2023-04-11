@@ -8,8 +8,6 @@
     - name: Unmount NFS home export
       mount:
         path: "/mnt/ha-nfs/home"
-        src: "172.16.4.200:/mnt/nfsshare/exports/home"
-        fstype: nfs
         state: unmounted
 
 # unmount the FSS data export from all nodes

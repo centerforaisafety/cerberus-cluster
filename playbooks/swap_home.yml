@@ -8,8 +8,6 @@
     - name: Unmount FSS home export
       mount:
         path: "/home"
-        src: "{{ nfs_source_IP }}:/home"
-        fstype: nfs
         state: unmounted
 
 # mount the FSS home export to all nodes on /mnt/fss/home
