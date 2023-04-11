@@ -1,0 +1,36 @@
+--- 
+
+# unmount the FSS data export from all nodes
+- hosts: all
+  gather_facts: true
+  become: true
+  tasks:
+    - name: Unmount FSS home export
+      mount:
+        path: "/home"
+        src: "{{ nfs_source_IP }}:/home"
+        fstype: nfs
+        state: unmounted
+
+# mount the FSS home export to all nodes on /mnt/fss/home
+# mount the NFS home export to all nodes on /home
+- hosts: all
+  gather_facts: true
+  become: true
+  tasks:
+    - include_role:
+        name: nfs-client
+      vars:
+        local_path: "/mnt/fss/home"
+        export_host: "{{ nfs_source_IP }}"
+        export_path: "/home"
+        options: "{{ nfs_options }}"
+        lock: "none"
+    - include_role:
+        name: nfs-client
+      vars:
+        local_path: "/home"
+        export_host: 172.16.4.200
+        export_path: "/mnt/nfsshare/exports/home"
+        options: "{{ nfs_options }}"
+        lock: "none"
