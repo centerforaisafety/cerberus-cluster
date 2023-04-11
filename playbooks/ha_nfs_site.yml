@@ -1,3 +1,4 @@
+---
 
 - hosts: compute
   become: true

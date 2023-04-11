@@ -1,3 +1,5 @@
+---
+
 - hosts: compute_to_add
   become: true
   gather_facts: true
