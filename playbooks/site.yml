@@ -95,11 +95,8 @@
         lock: "none"
       when: add_nfs|bool and home_fss|bool
 
-
 - hosts: bastion
   become: true
-  vars:
-
   tasks:
     - include_role: 
         name: ssl

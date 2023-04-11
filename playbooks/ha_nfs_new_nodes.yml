@@ -65,7 +65,6 @@
      export_name: "scratch"
      local_path:  "/mnt/localdisk/nfs"
      iscsi_ip: "{{ cluster_mount_ip }}"
-
   tasks: 
     - include_role: 
         name: iscsi
@@ -157,7 +156,7 @@
         export_path: "/mnt/nfsshare/exports/home"
         options: "{{ nfs_options }}"
         lock: "none"
-     - include_role:
+    - include_role:
         name: nfs-client
       vars:
         local_path: "/data"

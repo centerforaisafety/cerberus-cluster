@@ -103,11 +103,8 @@
         options: "NFS options"
         lock: "none"
 
-
 - hosts: bastion
   become: true
-  vars:
-
   tasks:
     - include_role: 
         name: ssl
@@ -126,8 +123,6 @@
     - include_role:
         name: no_instance_principal
       when: not inst_prin|bool 
-      
-
 
 - hosts: compute, login
   become: true
