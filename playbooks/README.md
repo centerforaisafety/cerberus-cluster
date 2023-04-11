@@ -1,0 +1,2 @@
+After the high avilability NFS is deployed rename site.yml, new_nodes.yml, and resize_add.yml by prefixing 'old_' to each of them. 
+Then remove the 'ha_nfs_' prefix from the playbooks that have the 'ha_nfs_'.
