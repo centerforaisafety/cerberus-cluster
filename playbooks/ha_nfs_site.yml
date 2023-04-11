@@ -253,7 +253,6 @@
         options: "NFS options"
         lock: "none"
 
-
 - hosts: all
   become: true
   vars_files:
@@ -264,7 +263,6 @@
     - include_role: 
         name: sssd
       when: ldap|default(true)|bool
-
 
 - hosts: compute
   become: true

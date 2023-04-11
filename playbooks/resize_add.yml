@@ -76,7 +76,6 @@
 
 - hosts: compute_to_add
   become: true
-  
   tasks: 
     - include_role: 
         name: nfs-client

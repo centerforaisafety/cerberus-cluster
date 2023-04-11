@@ -1,29 +1,20 @@
 ---
 
-# unmount the NFS home export from bastion node
-- hosts: bastion
-  gather_facts: true
-  become: true
-  tasks:
-    - name: Unmount NFS home export
-      mount:
-        path: "/mnt/ha-nfs/home"
-        state: unmounted
-
-# unmount the FSS data export from all nodes
+# unmount from /mnt/ha-nfs/data and /data
 - hosts: all
   gather_facts: true
   become: true
   tasks:
-    - name: Unmount FSS data export
+    - name: Unmount /mnt/ha-nfs-data
+      mount:
+        path: "/mnt/ha-nfs/data"
+        state: unmounted
+    - name: Unmount /data
       mount:
         path: "/data"
-        src: "{{ nfs_source_IP }}:{{ nfs_source_path }}"
-        fstype: nfs
         state: unmounted
-
-# mount the FSS data export to all nodes on /mnt/fss/data
-# mount the NFS data export to all nodes on /data
+        
+# mount to '/mnt/fss/data' and '/data'
 - hosts: all
   gather_facts: true
   become: true

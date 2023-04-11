@@ -1,17 +1,20 @@
 --- 
 
-# unmount the FSS data export from all nodes
+# unmount from '/mnt/ha-nfs/home' and '/home'
 - hosts: all
   gather_facts: true
   become: true
   tasks:
-    - name: Unmount FSS home export
+    - name: Unmount /mnt/ha-nfs/home
+      mount:
+        path: "/mnt/ha-nfs/home"
+        state: unmounted
+    - name: Unmount /home
       mount:
         path: "/home"
         state: unmounted
 
-# mount the FSS home export to all nodes on /mnt/fss/home
-# mount the NFS home export to all nodes on /home
+# mount to '/mnt/fss/home' and '/home'
 - hosts: all
   gather_facts: true
   become: true

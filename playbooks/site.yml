@@ -115,8 +115,6 @@
     - include_role:
         name: no_instance_principal
       when: not inst_prin|bool 
-      
-
 
 - hosts: compute, login
   become: true
@@ -231,14 +229,12 @@
         lock: "none"
       when: add_nfs|default(false)|bool
 
-
 - hosts: all
   become: true
   tasks: 
     - include_role: 
         name: sssd
       when: ldap|default(true)|bool
-
 
 - hosts: compute
   become: true
@@ -273,7 +269,6 @@
       when: autoscaling_monitoring|default(false)|bool
     - include_role: 
         name: cron
-
 
 - hosts: compute
   become: true
