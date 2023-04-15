@@ -1,0 +1,22 @@
+---
+
+- hosts: bastion
+  gather_facts: true
+  become: true
+  tasks:
+    - include_role:
+        name: nfs-client
+      vars:
+        local_path: "/mnt/ha-nfs/data"
+        export_host: 172.16.4.200
+        export_path: "/mnt/nfsshare/exports/data"
+        options: "{{ nfs_options }}"
+        lock: "none"
+    - include_role:
+        name: nfs-client
+      vars:
+        local_path: "/mnt/ha-nfs/home"
+        export_host: 172.16.4.200
+        export_path: "/mnt/nfsshare/exports/home"
+        options: "{{ nfs_options }}"
+        lock: "none"

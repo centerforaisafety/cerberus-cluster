@@ -1,0 +1,10 @@
+---
+
+- hosts: all
+  become: true
+  tasks:
+    - name: Install ssh key for root access
+      authorized_key:
+        user: root
+        key: "/home/opc/.ssh/id_rsa.pub"
+        state: present
