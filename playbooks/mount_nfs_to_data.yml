@@ -1,15 +1,19 @@
 ---
 
-# unmount from /mnt/ha-nfs/data and /data
+# unmount from '/mnt/ha-nfs/data', '/data', and '/mnt/fss/data'
 - hosts: all
   gather_facts: true
   become: true
   tasks:
-    - name: Unmount /mnt/ha-nfs-data
+    - name: Unmount /mnt/ha-nfs/data
       mount:
         path: "/mnt/ha-nfs/data"
         state: unmounted
     - name: Unmount /data
+      mount:
+        path: "/data"
+        state: unmounted
+    - name: Unmount /mnt/fss/data
       mount:
         path: "/data"
         state: unmounted

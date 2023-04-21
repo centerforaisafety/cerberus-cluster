@@ -6,5 +6,5 @@
     - name: Install ssh key for root access
       authorized_key:
         user: root
-        key: "/home/opc/.ssh/id_rsa.pub"
+        key: "{{ lookup('file', '/home/opc/.ssh/root_key.pub') }}"
         state: present

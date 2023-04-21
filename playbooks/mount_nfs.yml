@@ -1,6 +1,6 @@
 ---
 
-- hosts: bastion
+- hosts: all
   gather_facts: true
   become: true
   tasks:

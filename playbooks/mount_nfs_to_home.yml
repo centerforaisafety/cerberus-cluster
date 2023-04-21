@@ -1,0 +1,41 @@
+--- 
+
+# unmount from '/mnt/ha-nfs/home', '/home', and '/mnt/fss/home'
+- hosts: all
+  gather_facts: true
+  become: true
+  tasks:
+    - name: Unmount /mnt/ha-nfs/home
+      mount:
+        path: "/mnt/ha-nfs/home"
+        state: unmounted
+    - name: Unmount /home
+      mount:
+        path: "/home"
+        state: unmounted
+    - name: Unmount /mnt/fss/home
+      mount:
+        path: "/mnt/fss/home"
+        state: unmounted
+
+# mount to '/mnt/fss/home' and '/home'
+- hosts: all
+  gather_facts: true
+  become: true
+  tasks:
+    - include_role:
+        name: nfs-client
+      vars:
+        local_path: "/mnt/fss/home"
+        export_host: "{{ nfs_source_IP }}"
+        export_path: "/home"
+        options: "{{ nfs_options }}"
+        lock: "none"
+    - include_role:
+        name: nfs-client
+      vars:
+        local_path: "/home"
+        export_host: 172.16.4.200
+        export_path: "/mnt/nfsshare/exports/home"
+        options: "{{ nfs_options }}"
+        lock: "none"

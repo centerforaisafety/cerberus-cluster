@@ -4,7 +4,7 @@
   become: true
   gather_facts: false
   vars:
-    ssh_key: "{{ lookup('file', '/mnt/fss/home/opc/.ssh/root_key.pub') }}"
+    ssh_key: "{{ lookup('file', '/home/opc/.ssh/root_key.pub') }}"
   tasks:
     - name: Install ssh key for root access
       authorized_key:

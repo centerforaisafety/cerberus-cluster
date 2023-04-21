@@ -1,0 +1,41 @@
+---
+
+# unmount from /mnt/ha-nfs/data and /data
+- hosts: all
+  gather_facts: true
+  become: true
+  tasks:
+    - name: Unmount /mnt/ha-nfs-data
+      mount:
+        path: "/mnt/ha-nfs/data"
+        state: unmounted
+    - name: Unmount /data
+      mount:
+        path: "/data"
+        state: unmounted
+    - name: Unmount /mnt/fss/data
+      mount:
+        path: "/mnt/fss/data"
+        state: unmounted
+        
+# mount to '/mnt/ha-nfs/data' and '/data'
+- hosts: all
+  gather_facts: true
+  become: true
+  tasks:
+    - include_role:
+        name: nfs-client
+      vars:
+        local_path: "/data"
+        export_host: "{{ nfs_source_IP }}"
+        export_path: "{{ nfs_source_path }} "
+        options: "{{ nfs_options }}"
+        lock: "none"
+    - include_role:
+        name: nfs-client
+      vars:
+        local_path: "/mnt/ha-nfs/data"
+        export_host: 172.16.4.200
+        export_path: "/mnt/nfsshare/exports/data"
+        options: "{{ nfs_options }}"
+        lock: "none"

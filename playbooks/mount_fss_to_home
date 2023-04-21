@@ -1,6 +1,6 @@
 --- 
 
-# unmount from '/mnt/ha-nfs/home' and '/home'
+# unmount from '/mnt/ha-nfs/home', '/home', and '/mnt/ha-nfs/home'
 - hosts: all
   gather_facts: true
   become: true
@@ -13,8 +13,12 @@
       mount:
         path: "/home"
         state: unmounted
+    - name: Unmount /mnt/ha-nfs/home
+      mount:
+        path: "/mnt/ha-nfs/home"
+        state: unmounted
 
-# mount to '/mnt/fss/home' and '/home'
+# mount to '/mnt/ha-nfs/home' and '/home'
 - hosts: all
   gather_facts: true
   become: true
@@ -22,7 +26,7 @@
     - include_role:
         name: nfs-client
       vars:
-        local_path: "/mnt/fss/home"
+        local_path: "/home"
         export_host: "{{ nfs_source_IP }}"
         export_path: "/home"
         options: "{{ nfs_options }}"
@@ -30,7 +34,7 @@
     - include_role:
         name: nfs-client
       vars:
-        local_path: "/home"
+        local_path: "/mnt/ha-nfs/home"
         export_host: 172.16.4.200
         export_path: "/mnt/nfsshare/exports/home"
         options: "{{ nfs_options }}"
