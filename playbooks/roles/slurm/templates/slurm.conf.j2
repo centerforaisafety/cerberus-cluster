@@ -20,6 +20,7 @@ SlurmdLogFile=/var/log/slurm/slurmd.log
 StateSaveLocation={{ slurm_nfs_path }}/spool/slurm
 SwitchType=switch/none
 TaskPlugin=task/affinity,task/cgroup
+JobContainerType=job_container/tmpfs
 PrologFlags=contain
 InactiveLimit=0
 KillWait=30
