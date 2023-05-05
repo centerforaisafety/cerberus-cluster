@@ -118,3 +118,13 @@
   include_role:
     name: safe_yum
   ignore_errors: true
+
+# Used for local storage
+- name: Create local storage location for all compute nodes
+  become: true
+  file: 
+    path: /mnt/localdisk/slurm_tmp
+    state: directory
+    owner: root
+    group: slurm
+    mode: '0770'
