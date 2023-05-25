@@ -106,6 +106,26 @@
               eval "$command"
           }
 
+          nix-remove() {
+              command="nix profile remove $1"
+              shift
+              for arg in "$@"; do
+                  command+=" $arg"
+              done
+              echo $command
+              eval "$command"
+          }
+
+          nix-upgrade() {
+              command="nix profile upgrade $1"
+              shift
+              for arg in "$@"; do
+                  command+=" $arg"
+              done
+              echo $command
+              eval "$command"
+          }
+
           nix-list() {
               command="nix profile list"
               eval "$command"
