@@ -199,3 +199,9 @@
         path: /etc/bashrc
         state: absent
         regexp: '^export PATH=/nix/var/nix/profiles/default/bin:\$PATH$'
+    - name: Remove bash functions
+      blockinfile:
+        path: /etc/bashrc
+        block: ""
+        marker: "# {mark} NIX ANSIBLE MANAGED BLOCK"
+
