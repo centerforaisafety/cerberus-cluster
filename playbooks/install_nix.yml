@@ -88,6 +88,36 @@
     - name: Move nix.conf file
       command: mv /etc/nix/nix.conf /nix/nix.conf
 
+- name: Add bash function for nix command
+  hosts: login, slurm_backup
+  become: true
+  tasks: 
+    - name: Add bash function
+      blockinfile:
+        path: /etc/bashrc
+        block: |
+          nix-install() {
+              command="nix profile install nixpkgs#$1"
+              shift
+              for arg in "$@"; do
+                  command+=" nixpkgs#$arg"
+              done
+              echo $command
+              eval "$command"
+          }
+
+          nix-list() {
+              command="nix profile list"
+              eval "$command"
+          }
+
+          nix-search() {
+              command="nix search nixpkgs#$1"
+              eval "$command"
+          }
+        marker: "# {mark} NIX ANSIBLE MANAGED BLOCK"
+        state: present
+
 - name: Set Nix environment variables
   hosts: login, slurm_backup
   become: true
