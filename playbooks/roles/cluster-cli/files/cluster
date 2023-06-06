@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import ldap3
-from ldap3 import MODIFY_ADD
+from ldap3 import MODIFY_ADD, MODIFY_REPLACE
 import click
 import grp
 import pwd
@@ -208,8 +208,24 @@ def delete(user):
   with ldap3.Connection(server, bind_dn, bind_pass, auto_bind=True) as conn:
     conn.delete("cn={},{}".format(user, search_base))
 
-
+@user.command()
+@click.argument('user')
+@click.argument('new_gid')
+def change_group(user, new_gid):
+    """
+      Change user's group.
+      Parameters:
+        user (User Name)
+        new_gid (Group GID)
+    """
+    search_base = people_dn
+    server = ldap3.Server(host, use_ssl=True)
+    with ldap3.Connection(server, bind_dn, bind_pass, auto_bind=True) as conn:
+        conn.modify("cn={},{}".format(user, search_base),{'gidNumber': [(MODIFY_REPLACE, [new_gid])]})
+    print(conn.result)
+  
 main.add_command(group)
 main.add_command(user)
+
 if __name__ == "__main__":
     main()
