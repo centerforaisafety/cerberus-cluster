@@ -24,7 +24,7 @@
 
     - name: Remove goslmailer.log file
       file:
-        path: /var/log/goslmailer.log
+        path: /data/spool/goslmailer.log
         state: absent
 
     - name: Remove goslmailer.conf file
@@ -36,7 +36,7 @@
       file:
         path: /etc/slurm/gobler.conf
         state: absent
-
+    
     - name: Stop gobler service
       systemd:
         name: gobler

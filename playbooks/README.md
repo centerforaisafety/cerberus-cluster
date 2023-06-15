@@ -12,5 +12,6 @@ To install goslmailer run the goslmailer_install.yml and enter the slack_bot_tok
 1. Now go to: [https://myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords). Again ensure you are on the correct account.
 1. Press the "select app" dropdown and select "other". Then enter any name you like such as "CAIS Notifications". This will only be used here but should be recognizable.
 1. Press "Generate" in the bottom right and copy this password (Copy this into terminal window when prompted).
+1. PRESS DONE!
 
 To uninstall goslmailer run goslmailer_uninstall.yml. Note that this does not remove the MailProg entry from the slurm.conf. This won't cause problems but will be silently erroring in the slurmctld.log. So if you want to be clean you can remove that from the config.
