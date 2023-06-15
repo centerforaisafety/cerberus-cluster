@@ -47,6 +47,7 @@ CommunicationParameters=NoAddrCache
 TopologyPlugin=topology/tree
 TreeWidth=2048
 SlurmctldParameters=enable_configless
+MailProg=/bin/goslmailer
 
 {% if sacct_limits|bool %}
 AccountingStorageTRES=gres/gpu
