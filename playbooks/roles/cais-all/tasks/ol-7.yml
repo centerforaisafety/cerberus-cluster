@@ -1,4 +1,8 @@
----
+# Turn off swap
+- name: Turn off swap
+  become: true
+  shell: swapoff -a
+
 # Needed for newer versions of zsh
 - name: install ncurses
   vars:
