@@ -1,4 +1,5 @@
 - name: Download and unpack files
+  become: true
   block: 
     - name: Download zip
       get_url:
