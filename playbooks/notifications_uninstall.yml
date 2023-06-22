@@ -1,5 +1,6 @@
 - name: Uninstall goslmailer
-  hosts: bastion
+  hosts: bastion, slurm_backup
+  gather_facts: false
   become: true
   tasks:
     - name: Remove goslmailer binary
@@ -42,13 +43,40 @@
         name: gobler
         state: stopped
         enabled: false
-      ignore_errors: True
+      ignore_errors: true
 
     - name: Remove gobler.service file
       file:
         path: /etc/systemd/system/gobler.service
         state: absent
 
+    - name: Remove triggers directory
+      file:
+        path: /etc/slurm/triggers
+        state: absent
+
     - name: Reload systemd daemon
       systemd:
         daemon_reload: true
+
+- name: Remove striggers for admin notifications
+  hosts: bastion
+  gather_facts: false
+  become: true
+  vars:
+  tasks:
+    - name: Run strigger --get and capture output
+      command: strigger --get
+      register: command_output
+
+    - name: Extract IDs from output
+      set_fact:
+        trigger_ids: "{{ (command_output.stdout | regex_findall('^\\s*(\\d+).*\\/etc\\/slurm\\/triggers\\/admin_notifications\\/.*$', multiline=True)) }}"
+
+    - name: Run strigger --clear on IDs
+      command: strigger --clear --id "{{ item }}"
+      ignore_errors: true
+      become_user: slurm
+      loop: "{{ trigger_ids }}"
+      loop_control:
+        loop_var: item
