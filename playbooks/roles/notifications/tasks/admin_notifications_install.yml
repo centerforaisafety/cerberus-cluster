@@ -1,0 +1,19 @@
+- name: Copy triggers directory to /etc/slurm/
+  copy:
+    src: /opt/oci-hpc/playbooks/roles/notifications/files/triggers
+    dest: /etc/slurm/
+
+- name: Set ownership and permissions for /etc/slurm/triggers/
+  file:
+    path: /etc/slurm/triggers
+    owner: slurm
+    group: slurm
+    mode: "770"
+    recurse: yes
+
+- name: edit trigger.sh
+  replace:
+    path: '/etc/slurm/triggers/trigger.sh'
+    regexp: "\\$WEBHOOK_URL"
+    replace: "{{ webhook_url }}"
+  no_log: true
