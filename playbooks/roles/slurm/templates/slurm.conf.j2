@@ -24,8 +24,9 @@ TaskPlugin=task/affinity,task/cgroup
 JobContainerType=job_container/tmpfs
 PrologFlags=contain
 InactiveLimit=0
-KillWait=30
-MinJobAge=300
+KillWait=120
+MaxJobCount=100000
+MinJobAge=21600
 SlurmctldTimeout=300
 SlurmdTimeout=600
 Waittime=0
@@ -42,7 +43,11 @@ JobAcctGatherFrequency=30
 JobAcctGatherType=jobacct_gather/linux
 SlurmctldDebug=info
 SlurmdDebug=info
-EnforcePartLimits=NO
+EnforcePartLimits=ALL
+# Default Memory Per GPU in MB
+DefMemPerGPU=200000
+# Give 2 CPUs per GPU
+DefCpuPerGPU=2
 PropagateResourceLimitsExcept=MEMLOCK
 CommunicationParameters=block_null_hash
 TopologyPlugin=topology/tree
@@ -56,9 +61,30 @@ HealthCheckInterval=300
 HealthCheckNodeState=IDLE,CYCLE
 {% endif %}
 MailProg=/bin/goslmailer
+UnkillableStepTimeout=120
+
+# Priority/Fairshare section
+PriorityType=priority/multifactor
+# 2 week half-life
+PriorityDecayHalfLife=14-0
+# The larger the job, the greater its job size priority.
+PriorityFavorSmall=no
+
+# FairShareDampeningFactor=2
+
+# The job's age factor reaches 1.0 after waiting in the
+# queue for 2 weeks.
+PriorityMaxAge=14-0
+
+# This next group determines the weighting of each of the
+# components of the Multi-factor Job Priority Plugin.
+# The default value for each of the following is 1.
+PriorityWeightAge=1000
+PriorityWeightFairshare=10000
+PriorityWeightJobSize=1000
 
 {% if sacct_limits|bool %}
-AccountingStorageTRES=gres/gpu
+AccountingStorageTRES=gres/gpu,gres/gpu:A100
 AccountingStorageEnforce=limits,associations,qos,safe
 JobCompType=jobcomp/none
 TrackWckey=no
@@ -76,7 +102,7 @@ Nodeset={{instance.name}} Feature={{instance.name}}
 {% for instance in partition.instance_types %}
 {{ nodesList.append(instance.name)}}
 {%- endfor %}
-PartitionName={{partition.name}} Nodes={{nodesList|join(',')}} Default=YES
+PartitionName={{partition.name}} Nodes={{nodesList|join(',')}} Default=YES DefaultTime=02:00:00 MaxTime=2-0 State=UP
 {% else %}
 {% set nodesList = [] %}
 {% for instance in partition.instance_types %}
