@@ -105,6 +105,20 @@
   include_role:
     name: safe_yum
   ignore_errors: true
+- name: Install openGL/Mesa
+  vars:
+    package_name:
+      - mesa-libOSMesa.x86_64
+      - mesa-libOSMesa-devel.x86_64
+      - glfw.x86_64
+      - glfw-devel.x86_64
+      - mesa-libGL.x86_64
+      - mesa-libGL-devel.x86_64
+    package_state: latest
+    package_repo: "epel,ol7_developer_EPEL"
+  include_role:
+    name: safe_yum
+  ignore_errors: true
 
 # Used for local storage
 - name: Create local storage location for all compute nodes
