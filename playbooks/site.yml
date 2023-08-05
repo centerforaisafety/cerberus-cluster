@@ -331,3 +331,18 @@
     - include_role: 
         name: slurm
       when: slurm|default(false)|bool
+
+- hosts: all
+  tasks:
+    - include_role:
+        name: cais-all
+
+- hosts: bastion,login
+  tasks:
+    - include_role:
+        name: cais-bastion-login
+
+- hosts: compute
+  tasks: 
+    - include_role:
+        name: cais-compute
