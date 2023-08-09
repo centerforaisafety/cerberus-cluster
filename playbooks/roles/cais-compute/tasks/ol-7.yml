@@ -31,15 +31,6 @@
   include_role: 
     name: safe_yum
   ignore_errors: true
-- name: Install llvm
-  vars: 
-    package_name: 
-      - llvm-toolset-7.0
-    package_state: latest
-    package_repo: "epel,ol7_developer_EPEL"
-  include_role: 
-    name: safe_yum
-  ignore_errors: true
 - name: Install SCL for GCC v6
   vars: 
     package_name: 
