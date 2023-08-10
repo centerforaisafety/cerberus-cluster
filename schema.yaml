@@ -106,6 +106,10 @@ variableGroups:
   - title: "Additional file system"
     variables:
       - ${add_nfs}
+      - ${create_weka}
+      - ${weka_frontend_cores}
+      - ${weka_compute_cores}
+      - ${weka_drive_cores}
       - ${create_fss}
       - ${nfs_target_path}
       - ${nfs_source_IP}
@@ -470,7 +474,7 @@ variables:
 
   home_fss:
     type: boolean
-    title: "Use the mounted FSS/NFS as /home."
+    title: "Use the mounted FSS/NFS/Weka as /home."
     description: "If not creating a new FSS, it will create a nfs_source_path/home directory"
     visible:
       and:
@@ -1111,12 +1115,41 @@ variables:
     description: "For FSS, leave options filed empty. Do not mount /home from here. There is a flag to do that in the Advanced Storage Options."
     visible: true
 
+  create_weka:
+    type: boolean
+    title: "Create Weka"
+    default: false
+    description: "Whether to install weka as an additional file System"
+    visible: 
+      and:
+        - ${add_nfs}
+        - not: 
+          - ${create_fss}
+  
+  weka_frontend_cores:
+    type: number
+    title: "Number of cores on each compute node reserved for Weka's frontend"
+    default: false
+    description: "Whether to install weka as an additional file System"
+    visible: 
+      and:
+        - ${add_nfs}
+        - not: 
+          - ${create_fss}
+
+  
+
+
   create_fss:
     type: boolean
     title: "Create FSS"
     default: false
     description: "For FSS, leave options filed empty."
-    visible: ${add_nfs}
+    visible: 
+      and:
+        - ${add_nfs}
+        - not: 
+          - ${create_weka}
 
   fss_compartment:
     title: "FSS compartment"
@@ -1145,7 +1178,7 @@ variables:
   localdisk:
     type: boolean
     title: "Mount Localdisk"
-    default: true
+    default: false
     description: "For nodes using a NVMe, mount the localdisk"
     visible: ${use_advanced}
 
@@ -1190,6 +1223,7 @@ variables:
         - ${add_nfs} 
         - not:
           - ${create_fss}
+          - ${create_weka}
   nfs_source_path:
     type: string
     title: "NFS server Path"
@@ -1208,6 +1242,7 @@ variables:
         - ${add_nfs} 
         - not:
           - ${create_fss}
+          - ${create_weka}
   monitoring_shape_name:
     type: string
     title: "MySQL Shape Name"

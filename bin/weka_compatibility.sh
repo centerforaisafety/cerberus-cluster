@@ -26,7 +26,7 @@ do
         sudo chmod -R 770 /mnt/localdisk/slurm_tmp
         sudo chmod -R 777 /mnt/localdisk/enroot
         sudo sed -i '\%^LABEL=localscratch /mnt/localdisk/ xfs defaults,noatime 0 0$%d' /etc/fstab
-        sudo sed -i '\%^LABEL=locscratch[0-9] /mnt/localdisk xfs defaults,noatime 0 0$%d' /etc/fstab
+        sudo sed -i '\%^LABEL=locscratch[0-9] /mnt/localdisk[0-9]* xfs defaults,noatime 0 0$%d' /etc/fstab
 	echo '/data/nodes_local/$hostname /mnt/localdisk none defaults,bind 0 0' | sudo tee -a /etc/fstab
     "
 done < weka_hosts

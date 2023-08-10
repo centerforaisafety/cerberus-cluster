@@ -163,6 +163,7 @@ variable "hyperthreading" { default = true }
 variable "autoscaling" { default = false } 
 variable "latency_check" { default = true }
 variable "add_nfs" { default = false}
+variable "create_weka" { default = false}
 variable "create_fss" { default = false }
 variable "fss_compartment" {default = ""}
 variable "fss_ad" {default = ""}
