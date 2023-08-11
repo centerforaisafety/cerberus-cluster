@@ -1119,26 +1119,51 @@ variables:
     type: boolean
     title: "Create Weka"
     default: false
-    description: "Whether to install weka as an additional file System"
-    visible: 
-      and:
-        - ${add_nfs}
-        - not: 
-          - ${create_fss}
-  
-  weka_frontend_cores:
-    type: number
-    title: "Number of cores on each compute node reserved for Weka's frontend"
-    default: false
-    description: "Whether to install weka as an additional file System"
+    description: "Whether to install weka as an additional file System. Will move localdisk to a folder within the file system"
     visible: 
       and:
         - ${add_nfs}
         - not: 
           - ${create_fss}
 
-  
+  weka_version:
+    type: string
+    title: "Weka Version"
+    default: "4.2.0.162"
+    visible: 
+      and:
+        - ${add_nfs}
+        - ${create_weka}
 
+  weka_drive_core_ids:
+    type: string
+    title: "Core ids of cores reserved for weka's frontend"
+    default: "0,1,64,65"
+    description: "Exlusively reserved for Weka using Cgroups"
+    visible: 
+      and:
+        - ${add_nfs}
+        - ${create_weka}
+
+  weka_compute_core_ids:
+    type: string
+    title: "Core ids of cores reserved for weka's compute container"
+    default: "2,3,4,5,6,7,66,67,68,69,70,71"
+    description: "Exlusively reserved for Weka using Cgroups"
+    visible: 
+      and:
+        - ${add_nfs}
+        - ${create_weka}
+
+  weka_frontend_core_ids:
+    type: string
+    title: "Core ids of cores reserved for weka's frontend"
+    default: "8,9,72,73"
+    description: "Exlusively reserved for Weka using Cgroups"
+    visible: 
+      and:
+        - ${add_nfs}
+        - ${create_weka}
 
   create_fss:
     type: boolean

@@ -56,14 +56,14 @@
   gather_facts: true
   become: true
   tasks:
-    - include_role:
-        name: nfs-client
-      vars:
-        local_path: "/nix"
-        export_host: "{{ nfs_source_IP }}"
-        export_path: "/data/nix"
-        options: "{{ nfs_options }}"
-        lock: "none"
+    - name: Bind mount
+      ansible.posix.mount:
+        path: /nix
+        src: /data/nix
+        ops: bind
+        state: mounted
+        fstype: none
+
 
 - name: Link /var/run/nix and /data/nix/var/nix/daemon-socket dirs
   hosts: slurm_backup
