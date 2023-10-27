@@ -51,19 +51,17 @@
         state: directory
       when: not dir_stat.stat.exists
 
-- name: Mount /data/nix dir to /nix dir
+- name: Bind mount /data/nix dir to /nix dir
   hosts: all
   gather_facts: true
   become: true
   tasks:
-    - include_role:
-        name: nfs-client
-      vars:
-        local_path: "/nix"
-        export_host: "{{ nfs_source_IP }}"
-        export_path: "/data/nix"
-        options: "{{ nfs_options }}"
-        lock: "none"
+    - mount:
+        path: /nix
+        src: /data/nix
+        fstype: none
+        opts: bind
+        state: mounted
 
 - name: Link /var/run/nix and /data/nix/var/nix/daemon-socket dirs
   hosts: slurm_backup
