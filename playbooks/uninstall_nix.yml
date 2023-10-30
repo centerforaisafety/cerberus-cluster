@@ -85,7 +85,7 @@
       lineinfile:
         path: /etc/fstab
         state: absent
-        regexp: '{{ nfs_source_IP }}:\/data\/nix \/nix nfs defaults 0 0'
+        regexp: '\/data\/nix \/nix none bind 0 0'
 
 - name: Remove Nix store from shared filesystem
   hosts: bastion
