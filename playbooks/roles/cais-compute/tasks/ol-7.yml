@@ -110,15 +110,6 @@
   include_role:
     name: safe_yum
   ignore_errors: true
-- name: Install texlive
-  vars:
-    package_name:
-      - texlive
-    package_state: latest
-    package_repo: "epel,ol7_developer_EPEL"
-  include_role:
-    name: safe_yum
-  ignore_errors: true
 
 # Used for local storage
 - name: Create local storage location for all compute nodes
