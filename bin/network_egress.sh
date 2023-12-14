@@ -27,7 +27,6 @@ PARTITION=''
 HOSTS=$(sudo sinfo -p $PARTITION -S "%n" -o "%n" | tail -n +2)
 
 # Global Variables
-HOSTS=$(sudo sinfo -S "%n" -o "%n" | tail -n +2)
 TABLE='usage_records'
 CURRENT_HOUR=$(date +"%Y-%m-%d %H:00:00")
 PREVIOUS_HOUR=$(date -d "-1 hour" +"%Y-%m-%d %H:00:00")
