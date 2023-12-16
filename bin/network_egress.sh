@@ -28,9 +28,9 @@ HOSTS=$(sudo sinfo -p $PARTITION -S "%n" -o "%n" | tail -n +2)
 
 # Global Variables
 TABLE='usage_records'
-CURRENT_HOUR=$(date +"%Y-%m-%d %H:00:00")
-PREVIOUS_HOUR=$(date -d "-1 hour" +"%Y-%m-%d %H:00:00")
-HOST=
+START_TIME=$(date -d "-1 hour" +"%Y-%m-%d %H:00:00")
+END_TIME=$(date -d "-1 hour" +"%Y-%m-%d %H:59:59")
+HOST=''
 PASSWORD=''  # Consider moving to a more secure method
 DB_NAME='billing'
 declare -A TOTAL_NETWORK_USAGE_PER_USER
@@ -61,7 +61,7 @@ insert_network_usage_into_db() {
     local sql_values=()
     for user_id in "${!TOTAL_NETWORK_USAGE_PER_USER[@]}"; do
         local bytes=${TOTAL_NETWORK_USAGE_PER_USER[$user_id]}
-        sql_values+=("($user_id, 2, '$PREVIOUS_HOUR', '$CURRENT_HOUR', $bytes)")
+        sql_values+=("($user_id, 2, '$START_TIME', '$END_TIME', $bytes)")
     done
 
     if [ ${#sql_values[@]} -eq 0 ]; then

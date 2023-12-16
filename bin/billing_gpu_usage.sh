@@ -1,0 +1,135 @@
+#!/bin/bash
+
+# Description:
+#   This script calculates and records the daily usage of GPU resources by paid users. 
+#   It retrieves usage data, distinguishes between different GPU types (A100 and H100), 
+#   and inserts summarized data into a database for billing purposes.
+#
+# Usage:
+#    This script should be scheduled to run daily at 00:00:00 with a cron job.
+#   
+# Security Note:
+#   - The script currently contains a placeholder for database credentials, which should be handled securely. 
+
+# Global Variables
+TABLE='usage_records'
+DATE=$(date -d "-1 day" +"%Y-%m-%d")
+MYSQL_HOST_IP=''
+MYSQL_PASSWORD=''  # TODO: Refactor to use a secure location for the db credientials.
+DB_NAME='billing'
+PARTITION='' # TODO: Add paid partition
+
+# Associative arrays for each gpu type
+declare -A TOTAL_A100_USAGE_PER_USER
+declare -A TOTAL_H100_USAGE_PER_USER
+
+# Associative array of paid users
+# TODO: Refactor this to be dynamic
+declare -A PAID_USERS
+PAID_USERS['florian_tramer']=10096
+
+# Function to convert elapsed time in [days-]hours:minutes:seconds format to seconds
+# Usage: comvert_to_seconds $ELAPSED_TIME
+convert_to_seconds() {
+    elapsed_time=$1
+    days=0
+    hours=0
+    minutes=0
+    seconds=0
+
+    # Check if days are present in the time format
+    if [[ $elapsed_time == *-* ]]; then
+        days=${elapsed_time%%-*}
+        elapsed_time=${elapsed_time#*-}
+    fi
+
+    # Split the time into hours, minutes, and seconds
+    IFS=':' read -ra time_parts <<< "$elapsed_time"
+    hours=${time_parts[0]}
+    minutes=${time_parts[1]}
+    seconds=${time_parts[2]}
+
+    # Calculate total seconds
+    total_seconds=$((days * 86400 + hours * 3600 + minutes * 60 + seconds))
+    echo $total_seconds
+}
+
+# Function to parse AllocTRES to extract gpu type
+# Usage: extract_gpu_type $ALLOC_TRES
+extract_gpu_type() {
+    gpu_type=$(echo "$1" | grep -o 'gres/gpu:[^,]*' | cut -d ':' -f2 | cut -d '=' -f1)
+    echo "$gpu_type"
+}
+
+# Function to parse AllocTRES to extract gpu quantity
+# Usage: extract_gpu_quantity
+extract_gpu_quantity() {
+    gpu_quantity=""
+
+    # Extract the string that contains 'gres/gpu:'
+    gpu_info=$(echo "$1" | grep -o 'gres/gpu:[^,]*')
+
+    if [ -n "$gpu_info" ]; then
+        # Extract the quantity
+        gpu_quantity=$(echo "$gpu_info" | cut -d '=' -f2)
+    fi
+
+    echo "$gpu_quantity"
+}
+
+# Function to get gpu usage per user
+get_gpu_usage_per_user() {
+    local usage_per_user=$(sacct -a -X --partition $PARTITION --format=user,elapsed,AllocTRES --starttime ${DATE}T00:00:00 --endtime ${DATE}T23:59:59 --state=bf,ca,cd,dl,f,nf,oom,pr,to --parsable2)
+    while read -r line; do
+        local USER_NAME ELAPSED_TIME ALLOC_TRES
+        read -r USER_NAME ELAPSED_TIME ALLOC_TRES <<< $(awk -F '|' '{print $1, $2, $3}' <<< "$line")
+
+        # Filter for paid users only
+        if [[ ${PAID_USERS[$USER_NAME]+_} ]]; then
+            USER_ID=${PAID_USERS[$USER_NAME]}
+            SECONDS=$(convert_to_seconds $ELAPSED_TIME)
+            GPU_TYPE=$(extract_gpu_type $ALLOC_TRES)
+            GPU_QUANTITY=$(extract_gpu_quantity $ALLOC_TRES)
+
+            # Filter by gpu type
+            if [[ "$GPU_TYPE" == "a100" ]]; then
+                TOTAL_A100_USAGE_PER_USER[$USER_ID]=$((TOTAL_A100_USAGE_PER_USER[$USER_ID] + $(($SECONDS * $GPU_QUANTITY))))
+            elif [[ "$GPU_TYPE" == "h100" ]]; then
+                TOTAL_H100_USAGE_PER_USER[$USER_ID]=$((TOTAL_H100_USAGE_PER_USER[$USER_ID] + $(($SECONDS * $GPU_QUANTITY))))
+            fi
+        fi
+    done <<< "$usage_per_user"
+}
+
+# Function to insert gpu usage data into the database with a single INSERT query
+insert_gpu_usage_into_db() {
+    local sql_values=()
+
+    # Append INSERT statements for a100 usage records
+    for user_id in "${!TOTAL_A100_USAGE_PER_USER[@]}"; do
+        local SECONDS=${TOTAL_A100_USAGE_PER_USER[$user_id]}
+        sql_values+=("($user_id, 1, '${DATE} 00:00:00', '${DATE} 23:59:59', $SECONDS)")
+    done
+
+    # Append INSER statements for h100 usage records
+    for user_id in "${!TOTAL_H100_USAGE_PER_USER[@]}"; do
+        local SECONDS=${TOTAL_H100_USAGE_PER_USER[$user_id]}
+        sql_values+=("($user_id, 4, '${DATE} 00:00:00', '${DATE} 23:59:59', $SECONDS)")
+    done
+
+    if [ ${#sql_values[@]} -eq 0 ]; then
+        # No data to insert
+        return
+    fi
+
+    local sql="INSERT INTO $TABLE (user_id, resource_spec_id, usage_start_time, usage_end_time, usage_amount) VALUES "
+    sql+=$(IFS=','; echo "${sql_values[*]}")
+    sql+=";"
+
+    mysql -h $MYSQL_HOST_IP -u opc -p$MYSQL_PASSWORD $DB_NAME -e "$sql"
+}
+
+# Main script logic
+get_gpu_usage_per_user
+insert_gpu_usage_into_db
+

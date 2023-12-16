@@ -26,9 +26,9 @@
 
 # Global Variables
 TABLE='usage_records'
-CURRENT_HOUR=$(date +"%Y-%m-%d %H:00:00")
-PREVIOUS_HOUR=$(date -d "-1 hour" +"%Y-%m-%d %H:00:00")
-MYSQL_HOST_IP=
+START_TIME=$(date -d "-1 hour" +"%Y-%m-%d %H:00:00")
+END_TIME=$(date -d "-1 hour" +"%Y-%m-%d %H:59:59")
+MYSQL_HOST_IP=''
 PASSWORD=''  # TODO: Refactor to use a secure location for the db credientials.
 DB_NAME='billing'
 declare -A TOTAL_FILESYSTEM_USAGE_PER_USER
@@ -58,7 +58,7 @@ insert_filesystem_usage_into_db() {
     local sql_values=()
     for user_id in "${!TOTAL_FILESYSTEM_USAGE_PER_USER[@]}"; do
         local gigabytes=${TOTAL_FILESYSTEM_USAGE_PER_USER[$user_id]}
-        sql_values+=("($user_id, 3, '$PREVIOUS_HOUR', '$CURRENT_HOUR', $gigabytes)")
+        sql_values+=("($user_id, 3, '$START_TIME', '$END_TIME', $gigabytes)")
     done
 
     if [ ${#sql_values[@]} -eq 0 ]; then
