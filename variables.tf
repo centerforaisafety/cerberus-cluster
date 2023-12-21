@@ -224,6 +224,16 @@ variable "billing" {
   default = false
 }
 
+variable "billing_mysql_db_admin_username" { 
+  type = string
+  default = "root"
+}
+
+variable "billing_mysql_db_admin_password" { 
+  type = string
+  default = "Billing1234!"
+}
+
 variable "billing_shape_name" { 
   type = string
   default = "MySQL.VM.Standard.E4.1.8GB"

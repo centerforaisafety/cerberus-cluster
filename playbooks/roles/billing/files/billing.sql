@@ -73,7 +73,7 @@ VALUES
 -- Insert resource types
 INSERT INTO billing.resource_types (resource_name)
 VALUES
-	('GPU'),
+	('GPU', ),
 	('CPU'),
 	('RAM'),
 	('Filesystem'),

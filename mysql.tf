@@ -16,7 +16,9 @@ resource "oci_mysql_mysql_db_system" "monitoring_mysql_db_system" {
 }
 
 resource "oci_mysql_mysql_db_system" "billing_mysql_db_system" {
+    # ... existing resource configuration ...
     count = var.billing ? 1 : 0
+
     # Required
     availability_domain = var.bastion_ad
     compartment_id = var.targetCompartment
@@ -24,14 +26,8 @@ resource "oci_mysql_mysql_db_system" "billing_mysql_db_system" {
     subnet_id = local.subnet_id
 
     # Optional
-    display_name = "billing"
-    mysql_version = "8.0.35"
-    port = "3306"
-    port_x = "33060"
-
-    is_highly_available = "true"
-    admin_password = var.admin_password
-    admin_username = var.admin_username 
+    admin_password = var.billing_mysql_db_admin_password
+    admin_username = var.billing_mysql_db_admin_username
     backup_policy {
         is_enabled = true
         # Point-In-Time Recovery
@@ -40,6 +36,13 @@ resource "oci_mysql_mysql_db_system" "billing_mysql_db_system" {
         }
         retention_in_days = "7"
     }
+    description = "MySQL DB System for billing"
+    display_name = "billing"
+    mysql_version = "8.0.35"
+    port = "3306"
+    port_x = "33060"
+
+    is_highly_available = "true"
     crash_recovery = "ENABLED"
     data_storage_size_in_gb = "50"
     deletion_policy {
@@ -49,6 +52,7 @@ resource "oci_mysql_mysql_db_system" "billing_mysql_db_system" {
     }
 
     freeform_tags = {
-        "Template" = "Production"
+        "Template" = "Production",
+        "CreatedTime" = timestamp()
     }
 }

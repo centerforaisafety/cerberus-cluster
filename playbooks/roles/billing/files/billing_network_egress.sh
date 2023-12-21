@@ -73,7 +73,7 @@ insert_network_usage_into_db() {
     sql+=$(IFS=','; echo "${sql_values[*]}")
     sql+=";"
 
-    mysql -h $HOST -u admin -p$PASSWORD $DB_NAME -e "$sql"
+    mysql -h $HOST -u root -p$PASSWORD $DB_NAME -e "$sql"
 }
 
 # Main script logic

@@ -31,7 +31,7 @@
     - billing_gpu_usage.sh
     - billing_network_egress.sh
 
-- name: Source billing database environment variables
-  shell: "mysql -u admin -h {{ billing_mysql_ip }} -p{{ admin_password }} < /opt/oci-hpc/billing/billing.sql"
+- name: Create billing database
+  shell: "mysql -u {{ billing_mysql_db_username }} -h {{ billing_mysql_ip }} -p{{ billing_mysql_db_password }} < /opt/oci-hpc/billing/billing.sql"
 
 # TODO: Add cron job to run billing scripts

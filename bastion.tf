@@ -232,6 +232,8 @@ resource "null_resource" "cluster" {
       autoscaling_mysql_service = var.autoscaling_mysql_service,
       monitoring_mysql_ip = var.autoscaling_monitoring && var.autoscaling_mysql_service ? oci_mysql_mysql_db_system.monitoring_mysql_db_system[0].ip_address : "localhost",
       billing_mysql_ip = var.billing ? oci_mysql_mysql_db_system.billing_mysql_db_system[0].ip_address : "",
+      billing_mysql_db_admin_password = var.billing ? billing_mysql_db_admin_password : "",
+      billing_mysql_db_admin_username = var.billing ? billing_mysql_db_admin_username : "",
       billing = var.billing,
       admin_password = var.admin_password,
       admin_username = var.autoscaling_mysql_service ? var.admin_username : "root",
