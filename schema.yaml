@@ -168,7 +168,10 @@ variableGroups:
       - ${pyxis}
       - ${pam}
       - ${sacct_limits}
-
+  - title: "Billing"
+    variables:
+      - ${billing}
+      - ${billing_shape_name}
   - title: "Hidden"
     variables:
       - ${region}
@@ -1561,3 +1564,18 @@ variables:
         - ${use_old_marketplace_image_login}
         - not:
           - ${use_standard_image_login}
+
+  billing:
+    type: boolean
+    title: "Enable billing"
+    default: false
+    description: "Enable billing for the cluster."
+    visible: true
+  
+  billing_shape_name:
+    type: string
+    title: "Billing Shape Name"
+    default: "MySQL.VM.Standard.E4.1.8GB"
+    required: true
+    description: "Billing Shape Name"
+    visible: ${billing}

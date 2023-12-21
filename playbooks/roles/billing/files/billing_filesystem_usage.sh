@@ -70,7 +70,7 @@ insert_filesystem_usage_into_db() {
     sql+=$(IFS=','; echo "${sql_values[*]}")
     sql+=";"
 
-    mysql -h $MYSQL_HOST_IP -u opc -p$PASSWORD $DB_NAME -e "$sql"
+    mysql -h $MYSQL_HOST_IP -u admin -p$PASSWORD $DB_NAME -e "$sql"
 }
 
 # Main script logic

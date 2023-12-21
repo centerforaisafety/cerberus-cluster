@@ -118,7 +118,7 @@ variable "image_ocid" { default = "##IMAGE##" }
 variable "ldap" { default = ${ldap} }
 variable "monitoring" { default = ${monitoring} }
 variable "autoscaling_monitoring" { default = ${autoscaling_monitoring} }
-
+variable "billing" { default = ${billing} }
 
 variable "tags" { default = "##TAGS##" }
 variable "private_deployment" { default = ${private_deployment} }

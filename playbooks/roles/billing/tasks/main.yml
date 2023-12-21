@@ -1,0 +1,37 @@
+---
+- name: Ensure billing directory exists
+  file:
+    path: "/opt/oci-hpc/billing"
+    state: directory
+    owner: '{{ ansible_user }}'
+    group: '{{ ansible_user }}'
+
+- name: Copy files
+  become: true
+  copy:
+    src: '{{ item }}'
+    dest: '/opt/oci-hpc/billing/{{ item }}'
+    force: no
+    owner: '{{ ansible_user }}'
+    group: '{{ ansible_user }}'
+  with_items:
+    - billing.sql
+
+- name: Copy scripts
+  become: true
+  copy: 
+    src: '{{ item }}'
+    dest: '/opt/oci-hpc/billing/{{ item }}'
+    force: no
+    owner: '{{ ansible_user }}'
+    group: '{{ ansible_user }}'
+    mode: 0755
+  with_items:
+    - billing_filesystem_usage.sh
+    - billing_gpu_usage.sh
+    - billing_network_egress.sh
+
+- name: Source billing database environment variables
+  shell: "mysql -u admin -h {{ billing_mysql_ip }} -p{{ admin_password }} < /opt/oci-hpc/billing/billing.sql"
+
+# TODO: Add cron job to run billing scripts
