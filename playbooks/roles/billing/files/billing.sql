@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS billing.measurement_units (
 CREATE TABLE IF NOT EXISTS billing.resource_types (
     resource_type_id INT AUTO_INCREMENT PRIMARY KEY,
     resource_name VARCHAR(255) NOT NULL,
+    resource_description TEXT,
     measurement_unit_id INT,
     FOREIGN KEY (measurement_unit_id) REFERENCES billing.measurement_units(measurement_unit_id)
 );
