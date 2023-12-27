@@ -16,7 +16,6 @@ resource "oci_mysql_mysql_db_system" "monitoring_mysql_db_system" {
 }
 
 resource "oci_mysql_mysql_db_system" "billing_mysql_db_system" {
-    # ... existing resource configuration ...
     count = var.billing ? 1 : 0
 
     # Required

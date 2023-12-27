@@ -172,6 +172,8 @@ variableGroups:
     variables:
       - ${billing}
       - ${billing_shape_name}
+      - ${billing_mysql_db_admin_username}
+      - ${billing_mysql_db_admin_password}
   - title: "Hidden"
     variables:
       - ${region}
@@ -1578,4 +1580,20 @@ variables:
     default: "MySQL.VM.Standard.E4.1.8GB"
     required: true
     description: "Billing Shape Name"
+    visible: ${billing}
+
+  billing_mysql_db_admin_username:
+    type: string
+    title: "MySQL Billing Admin DB username"
+    default: "root"
+    required: true
+    description: ""
+    visible: ${billing}
+
+  billing_mysql_db_admin_password:
+    type: string
+    title: "MySQL Billing Admin DB password"
+    default: "Billing1234!"
+    description: "" 
+    required: true
     visible: ${billing}

@@ -11,27 +11,27 @@ CREATE TABLE IF NOT EXISTS billing.users (
     account_id INT NOT NULL,
     user_name VARCHAR(255) NOT NULL,
     email VARCHAR(255),
-    FOREIGN KEY (account_id) REFERENCES accounts(account_id)
+    FOREIGN KEY (account_id) REFERENCES billing.accounts(account_id)
+);
+
+CREATE TABLE IF NOT EXISTS billing.measurement_units (
+    measurement_unit_id INT AUTO_INCREMENT PRIMARY KEY,
+    measurement_unit_name VARCHAR(50) NOT NULL,
+    measurement_unit_description TEXT
 );
 
 CREATE TABLE IF NOT EXISTS billing.resource_types (
     resource_type_id INT AUTO_INCREMENT PRIMARY KEY,
-    resource_name VARCHAR(255) NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS billing.units_of_measure (
-    unit_id INT AUTO_INCREMENT PRIMARY KEY,
-    unit_name VARCHAR(50) NOT NULL,
-    unit_description TEXT
+    resource_name VARCHAR(255) NOT NULL,
+    measurement_unit_id INT,
+    FOREIGN KEY (measurement_unit_id) REFERENCES billing.measurement_units(measurement_unit_id)
 );
 
 CREATE TABLE IF NOT EXISTS billing.resource_specifications (
     resource_spec_id INT AUTO_INCREMENT PRIMARY KEY,
     resource_type_id INT NOT NULL,
     specification_name VARCHAR(255),
-    unit_id INT,
-    FOREIGN KEY (resource_type_id) REFERENCES resource_types(resource_type_id),
-    FOREIGN KEY (unit_id) REFERENCES units_of_measure(unit_id)
+    FOREIGN KEY (resource_type_id) REFERENCES billing.resource_types(resource_type_id)
 );
 
 CREATE TABLE IF NOT EXISTS billing.usage_records (
@@ -41,8 +41,8 @@ CREATE TABLE IF NOT EXISTS billing.usage_records (
     usage_start_time DATETIME NOT NULL,
     usage_end_time DATETIME NOT NULL,
     usage_amount BIGINT NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users(user_id),
-    FOREIGN KEY (resource_spec_id) REFERENCES resource_specifications(resource_spec_id)
+    FOREIGN KEY (user_id) REFERENCES billing.users(user_id),
+    FOREIGN KEY (resource_spec_id) REFERENCES billing.resource_specifications(resource_spec_id)
 );
 
 CREATE TABLE IF NOT EXISTS billing.pricing (
@@ -52,17 +52,12 @@ CREATE TABLE IF NOT EXISTS billing.pricing (
     price_per_unit DECIMAL(10, 2) NOT NULL,
     price_effective_date DATE NOT NULL,
     price_end_date DATE,
-    FOREIGN KEY (account_id) REFERENCES accounts(account_id),
-    FOREIGN KEY (resource_spec_id) REFERENCES resource_specifications(resource_spec_id)
+    FOREIGN KEY (account_id) REFERENCES billing.accounts(account_id),
+    FOREIGN KEY (resource_spec_id) REFERENCES billing.resource_specifications(resource_spec_id)
 );
 
--- Create user for logging
--- CREATE USER 'billing_logger' IDENTIFIED WITH mysql_native_password BY '{{ admin_password }}';
-
--- GRANT INSERT ON billing.usage_records TO 'billing_logger'@'%';
-
 -- Insert units of measure
-INSERT INTO billing.units_of_measure (unit_name, unit_description)
+INSERT INTO billing.measurement_units (measurement_unit_name, measurement_unit_description)
 VALUES 
     ('bytes', 'Used for Network usage.'),
     ('bytes per second', 'Used for RAM usage.'),
@@ -71,18 +66,19 @@ VALUES
 
 
 -- Insert resource types
-INSERT INTO billing.resource_types (resource_name)
+INSERT INTO billing.resource_types (resource_name, measurement_unit_id)
 VALUES
-	('GPU', ),
-	('CPU'),
-	('RAM'),
-	('Filesystem'),
-    ('Network');
+	('GPU', 4),
+	('CPU', 4),
+	('RAM', 2),
+	('Filesystem', 3),
+    ('Network', 1);
 
 -- Insert resource specifications
-INSERT INTO billing.resource_specifications (resource_type_id, specification_name, unit_id)
+INSERT INTO billing.resource_specifications (resource_type_id, specification_name)
 VALUES
-	(1,'A100',4),
-	(5,'Network Egress',1),
-	(4,'Weka',3),
-	(1,'H100',4);
+	(1, 'A100'),
+	(5, 'Compute Node Egress'),
+	(4, 'Weka'),
+	(1, 'H100'),
+    (5, 'Login Node Egress');

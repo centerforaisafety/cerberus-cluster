@@ -3,35 +3,38 @@
 # Description:
 #   This script is designed to monitor and record network egress traffic usage by users across multiple hosts.
 #   It gathers network usage data from each host, aggregates the data by user, and then stores this
-#   information in a database for billing or tracking purposes. The script is tailored for an environment
+#   information in a database for billing and tracking purposes. The script is tailored for an environment
 #   with Slurm Workload Manager, iptables, SSH, and MySQL.
-#
+
 # Features:
 #   - Gathers network usage data from hosts listed by Slurm Workload Manager.
 #   - Processes and aggregates network usage data by user ID.
-#
+
 # Usage:
-#   The script is to be scheduled to run on fixed intervals using a cron job.
-#
+#   1. Update the PARTITION variable to match the name of the partition that contains paid users.
+#      - Example: PARTITION='paid'
+#      - If this is not done, the script will not be able to retrieve usage data.
+#   2. This script should be scheduled to run hourly with a cron job.
+#      - Example cron job: 0 * * * * /opt/oci-hpc/billing/billing_network_egress.sh
+
 # Requirements:
 #   - Slurm Workload Manager: for fetching the list of hosts.
 #   - iptables: for gathering network usage statistics.
 #   - SSH: for remote execution of commands on listed hosts.
 #   - MySQL: for storing the aggregated network usage data.
 #
-# Security Note:
-#   TODO: The script contains hardcoded database credentials. Move the credentials to a secure location. 
 
 # Gather list of hosts from Slurm
-PARTITION=''
+PARTITION='' # Add paid partition
 HOSTS=$(sudo sinfo -p $PARTITION -S "%n" -o "%n" | tail -n +2)
 
 # Global Variables
 TABLE='usage_records'
 START_TIME=$(date -d "-1 hour" +"%Y-%m-%d %H:00:00")
 END_TIME=$(date -d "-1 hour" +"%Y-%m-%d %H:59:59")
-HOST=''
-PASSWORD=''  # Consider moving to a more secure method
+MYSQL_HOST_IP=$(grep 'billing_mysql_ip' /etc/ansible/hosts | cut -d '=' -f2)
+MYSQL_USERNAME=$(grep 'billing_mysql_db_admin_username' /etc/ansible/hosts | cut -d '=' -f2)
+MYSQL_PASSWORD=$(grep 'billing_mysql_db_admin_password' ansible_hosts_file | cut -d '=' -f2)
 DB_NAME='billing'
 declare -A TOTAL_NETWORK_USAGE_PER_USER
 
@@ -73,7 +76,7 @@ insert_network_usage_into_db() {
     sql+=$(IFS=','; echo "${sql_values[*]}")
     sql+=";"
 
-    mysql -h $HOST -u root -p$PASSWORD $DB_NAME -e "$sql"
+    mysql -h $MYSQL_HOST_IP -u $MYSQL_USERNAME -p$MYSQL_PASSWORD $DB_NAME -e "$sql"
 }
 
 # Main script logic

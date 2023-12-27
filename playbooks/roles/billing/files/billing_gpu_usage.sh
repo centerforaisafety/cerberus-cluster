@@ -6,30 +6,43 @@
 #   and inserts summarized data into a database for billing purposes.
 #
 # Usage:
-#    This script should be scheduled to run daily at 00:00:00 with a cron job.
-#   
-# Security Note:
-#   - The script currently contains a placeholder for database credentials, which should be handled securely. 
+#    1. Update the PARTITION variable to match the name of the partition that is used by paid users.
+#      - Example: PARTITION='paid'
+#      - If this is not done, the script will not be able to retrieve usage data.
+#    2. This script should be scheduled to run daily at 00:00:00 with a cron job.
+#      - Example cron job: 0 0 * * * /opt/oci-hpc/billing/billing_gpu_usage.sh
+#
 
 # Global Variables
+PARTITION='' # Add paid partition
+
 TABLE='usage_records'
 DATE=$(date -d "-1 day" +"%Y-%m-%d")
-MYSQL_HOST_IP=''
-MYSQL_PASSWORD=''  # TODO: Refactor to use a secure location for the db credientials.
+MYSQL_HOST_IP=$(grep 'billing_mysql_ip' /etc/ansible/hosts | cut -d '=' -f2)
+MYSQL_USERNAME=$(grep 'billing_mysql_db_admin_username' /etc/ansible/hosts | cut -d '=' -f2)
+MYSQL_PASSWORD=$(grep 'billing_mysql_db_admin_password' ansible_hosts_file | cut -d '=' -f2)
 DB_NAME='billing'
-PARTITION='' # TODO: Add paid partition
 
 # Associative arrays for each gpu type
 declare -A TOTAL_A100_USAGE_PER_USER
 declare -A TOTAL_H100_USAGE_PER_USER
 
 # Associative array of paid users
-# TODO: Refactor this to be dynamic
 declare -A PAID_USERS
-PAID_USERS['florian_tramer']=10096
+
+# Function to get a list of paid users from the database
+get_paid_users_from_db() {
+    local sql="SELECT username, id FROM users"
+    local result=$(mysql -h $MYSQL_HOST_IP -u $MYSQL_USERNAME -p$PASSWORD $DB_NAME -e "$sql")
+    while read -r line; do
+        local USERNAME USER_ID
+        read -r USERNAME USER_ID <<< $(awk '{print $1, $2}' <<< "$line")
+        PAID_USERS[$USERNAME]=$USER_ID
+    done <<< "$result"
+}
 
 # Function to convert elapsed time in [days-]hours:minutes:seconds format to seconds
-# Usage: comvert_to_seconds $ELAPSED_TIME
+# Usage: convert_to_seconds $ELAPSED_TIME
 convert_to_seconds() {
     elapsed_time=$1
     days=0
@@ -130,6 +143,7 @@ insert_gpu_usage_into_db() {
 }
 
 # Main script logic
+get_paid_users_from_db
 get_gpu_usage_per_user
 insert_gpu_usage_into_db
 

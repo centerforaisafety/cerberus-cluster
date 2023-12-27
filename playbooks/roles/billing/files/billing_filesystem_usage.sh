@@ -11,9 +11,9 @@
 #   - Customizable User List: Currently uses a static list of paid users, but can be modified to dynamically fetch this list from an external source.
 
 # Usage:
-#   - Configure the script with appropriate MySQL database credentials and Weka filesystem access.
-#   - Schedule the script to run on a fixed interval with a cronjob.
-#   - Ensure the script has executable permissions (use 'chmod +x script_name.sh' if necessary).
+#   1. This script should be scheduled to run hourly with a cron job.
+#      - Example cron job: 0 * * * * /opt/oci-hpc/billing/billing_filesystem_usage.sh
+
 
 # Requirements:
 #   - Bash shell environment.
@@ -21,22 +21,29 @@
 #   - MySQL client installed and network access to the MySQL database server.
 #   - Necessary permissions to execute and schedule the script in the operating environment.
 
-# Security Note:
-#   - The script currently contains a placeholder for database credentials, which should be handled securely. 
-
 # Global Variables
 TABLE='usage_records'
 START_TIME=$(date -d "-1 hour" +"%Y-%m-%d %H:00:00")
 END_TIME=$(date -d "-1 hour" +"%Y-%m-%d %H:59:59")
-MYSQL_HOST_IP=''
-PASSWORD=''  # TODO: Refactor to use a secure location for the db credientials.
+MYSQL_HOST_IP=$(grep 'billing_mysql_ip' /etc/ansible/hosts | cut -d '=' -f2)
+MYSQL_USERNAME=$(grep 'billing_mysql_db_admin_username' /etc/ansible/hosts | cut -d '=' -f2)
+MYSQL_PASSWORD=$(grep 'billing_mysql_db_admin_password' ansible_hosts_file | cut -d '=' -f2)
 DB_NAME='billing'
 declare -A TOTAL_FILESYSTEM_USAGE_PER_USER
 
 # Associative array of paid users
-# TODO: Refactor this to be dynamic
 declare -A PAID_USERS
-PAID_USERS['florian_tramer']=10096
+
+# Function to get a list of paid users from the database
+get_paid_users_from_db() {
+    local sql="SELECT username, id FROM users"
+    local result=$(mysql -h $MYSQL_HOST_IP -u $MYSQL_USERNAME -p$PASSWORD $DB_NAME -e "$sql")
+    while read -r line; do
+        local USERNAME USER_ID
+        read -r USERNAME USER_ID <<< $(awk '{print $1, $2}' <<< "$line")
+        PAID_USERS[$USERNAME]=$USER_ID
+    done <<< "$result"
+}
 
 # Function to get weka filesystem usage per user
 get_filesystem_usage_per_user() {
@@ -70,10 +77,11 @@ insert_filesystem_usage_into_db() {
     sql+=$(IFS=','; echo "${sql_values[*]}")
     sql+=";"
 
-    mysql -h $MYSQL_HOST_IP -u root -p$PASSWORD $DB_NAME -e "$sql"
+    mysql -h $MYSQL_HOST_IP -u $MYSQL_USERNAME -p$PASSWORD $DB_NAME -e "$sql"
 }
 
 # Main script logic
+get_paid_users_from_db
 get_filesystem_usage_per_user
 insert_filesystem_usage_into_db
 
