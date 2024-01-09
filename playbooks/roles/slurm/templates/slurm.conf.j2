@@ -15,13 +15,13 @@ SlurmUser=slurm
 {% if pyxis|bool %}
 Prolog=/etc/slurm/prolog.sh
 {% endif %}
+PrologFlags=contain
 SlurmctldLogFile=/var/log/slurm/slurmctld.log
 SlurmdLogFile=/var/log/slurm/slurmd.log
 StateSaveLocation={{ slurm_nfs_path }}/spool/slurm
 SwitchType=switch/none
 TaskPlugin=task/affinity,task/cgroup
-JobContainerType=job_container/tmpfs
-PrologFlags=contain
+#JobContainerType=job_container/tmpfs
 InactiveLimit=0
 KillWait=120
 MaxJobCount=100000
@@ -75,6 +75,8 @@ PriorityMaxAge=14-0
 PriorityWeightAge=1000
 PriorityWeightFairshare=10000
 PriorityWeightJobSize=1000
+
+PriorityWeightTRES=CPU=10,GRES/gpu=1000
 
 {% if sacct_limits|bool %}
 AccountingStorageTRES=gres/gpu,gres/gpu:A100
