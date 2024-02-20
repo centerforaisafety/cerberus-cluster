@@ -1585,7 +1585,7 @@ variables:
   billing_mysql_db_admin_username:
     type: string
     title: "MySQL Billing Admin DB username"
-    default: "root"
+    default: "opc"
     required: true
     description: ""
     visible: ${billing}

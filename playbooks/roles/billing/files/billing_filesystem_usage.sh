@@ -27,7 +27,7 @@ START_TIME=$(date -d "-1 hour" +"%Y-%m-%d %H:00:00")
 END_TIME=$(date -d "-1 hour" +"%Y-%m-%d %H:59:59")
 MYSQL_HOST_IP=$(grep 'billing_mysql_ip' /etc/ansible/hosts | cut -d '=' -f2)
 MYSQL_USERNAME=$(grep 'billing_mysql_db_admin_username' /etc/ansible/hosts | cut -d '=' -f2)
-MYSQL_PASSWORD=$(grep 'billing_mysql_db_admin_password' ansible_hosts_file | cut -d '=' -f2)
+MYSQL_PASSWORD=$(grep 'billing_mysql_db_admin_password' /etc/ansible/hosts | cut -d '=' -f2)
 DB_NAME='billing'
 declare -A TOTAL_FILESYSTEM_USAGE_PER_USER
 
@@ -36,8 +36,14 @@ declare -A PAID_USERS
 
 # Function to get a list of paid users from the database
 get_paid_users_from_db() {
-    local sql="SELECT username, id FROM users"
-    local result=$(mysql -h $MYSQL_HOST_IP -u $MYSQL_USERNAME -p$PASSWORD $DB_NAME -e "$sql")
+    local sql="SELECT user_name, user_id FROM users"
+    local result=$(mysql -h $MYSQL_HOST_IP -u $MYSQL_USERNAME -p$MYSQL_PASSWORD $DB_NAME -e "$sql" 2>&1 | grep -v "mysql")
+
+    # Check if the result is empty
+    if [ -z "$result" ]; then
+        return 0
+    fi
+
     while read -r line; do
         local USERNAME USER_ID
         read -r USERNAME USER_ID <<< $(awk '{print $1, $2}' <<< "$line")
@@ -47,15 +53,15 @@ get_paid_users_from_db() {
 
 # Function to get weka filesystem usage per user
 get_filesystem_usage_per_user() {
-    local usage_per_user=$(weka fs quota list --all --output path,used | sed 's/default:\///')
+    local usage_per_user=$(weka fs quota list --all --raw-units --output path,used | sed 's/default:\///')
     while read -r line; do
-        local USER_NAME GIGABYTES
-        read -r USER_NAME GIGABYTES <<< $(awk '{print $1, $2}' <<< "$line")
+        local USER_NAME BYTES
+        read -r USER_NAME BYTES <<< $(awk '{print $1, $2}' <<< "$line")
         
         # Filter for paid users only
         if [[ ${PAID_USERS[$USER_NAME]+_} ]]; then
             USER_ID=${PAID_USERS[$USER_NAME]}
-            TOTAL_FILESYSTEM_USAGE_PER_USER[$USER_ID]=$GIGABYTES
+            TOTAL_FILESYSTEM_USAGE_PER_USER[$USER_ID]=$BYTES
         fi
     done <<< "$usage_per_user"
 }
@@ -64,8 +70,8 @@ get_filesystem_usage_per_user() {
 insert_filesystem_usage_into_db() {
     local sql_values=()
     for user_id in "${!TOTAL_FILESYSTEM_USAGE_PER_USER[@]}"; do
-        local gigabytes=${TOTAL_FILESYSTEM_USAGE_PER_USER[$user_id]}
-        sql_values+=("($user_id, 3, '$START_TIME', '$END_TIME', $gigabytes)")
+        local bytes=${TOTAL_FILESYSTEM_USAGE_PER_USER[$user_id]}
+        sql_values+=("($user_id, 3, '$START_TIME', '$END_TIME', $bytes)")
     done
 
     if [ ${#sql_values[@]} -eq 0 ]; then
@@ -77,11 +83,10 @@ insert_filesystem_usage_into_db() {
     sql+=$(IFS=','; echo "${sql_values[*]}")
     sql+=";"
 
-    mysql -h $MYSQL_HOST_IP -u $MYSQL_USERNAME -p$PASSWORD $DB_NAME -e "$sql"
+    mysql -h $MYSQL_HOST_IP -u $MYSQL_USERNAME -p$MYSQL_PASSWORD $DB_NAME -e "$sql" 2>&1 | grep -v "mysql"
 }
 
 # Main script logic
 get_paid_users_from_db
 get_filesystem_usage_per_user
 insert_filesystem_usage_into_db
-

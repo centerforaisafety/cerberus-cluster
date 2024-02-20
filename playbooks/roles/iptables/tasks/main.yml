@@ -1,0 +1,31 @@
+---
+
+# Ansible 2.9 doesn't allow for chain management so we need to create the chain ourselves
+- name: Create user-defined chain
+  shell:
+    cmd: sudo iptables -N USER_TRAFFIC
+  ignore_errors: true
+
+- name: Insert USER_TRAFFIC chain to OUTPUT
+  become: true
+  ansible.builtin.iptables:
+    chain: OUTPUT
+    jump: USER_TRAFFIC
+    action: insert
+
+- name: Append rule to USER_TRAFFIC chain
+  become: true
+  ansible.builtin.iptables:
+    table: filter
+    chain: USER_TRAFFIC
+    destination: 172.16.0.0/21
+    jump: RETURN
+    action: append
+
+# Save the rules
+- name: Save iptables rules
+  shell:
+    cmd: sudo iptables-save | sudo tee /etc/sysconfig/iptables
+- name: Save ip6tables rules
+  shell:
+    cmd: sudo ip6tables-save | sudo tee /etc/sysconfig/ip6tables

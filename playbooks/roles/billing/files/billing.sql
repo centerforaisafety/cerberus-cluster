@@ -3,7 +3,11 @@ CREATE DATABASE billing;
 CREATE TABLE IF NOT EXISTS billing.accounts (
     account_id INT AUTO_INCREMENT PRIMARY KEY,
     account_name VARCHAR(255) NOT NULL,
-    billing_details TEXT
+    billing_details TEXT,
+    email VARCHAR(255),
+    billing_address TEXT,
+    created_date DATE NOT NULL DEFAULT (CURRENT_DATE),
+    archived BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE IF NOT EXISTS billing.users (
@@ -11,7 +15,9 @@ CREATE TABLE IF NOT EXISTS billing.users (
     account_id INT NOT NULL,
     user_name VARCHAR(255) NOT NULL,
     email VARCHAR(255),
-    FOREIGN KEY (account_id) REFERENCES billing.accounts(account_id)
+    FOREIGN KEY (account_id) REFERENCES billing.accounts(account_id),
+    created_date DATE NOT NULL DEFAULT (CURRENT_DATE),
+    archived BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE IF NOT EXISTS billing.measurement_units (
@@ -60,19 +66,18 @@ CREATE TABLE IF NOT EXISTS billing.pricing (
 -- Insert units of measure
 INSERT INTO billing.measurement_units (measurement_unit_name, measurement_unit_description)
 VALUES 
-    ('bytes', 'Used for Network usage.'),
+    ('bytes', 'Used for Filesystem, Network usage.'),
     ('bytes per second', 'Used for RAM usage.'),
-    ('gigabytes', 'Used for Filesystem usage'),
     ('seconds', 'Used for GPU, CPU usage.');
 
 
 -- Insert resource types
 INSERT INTO billing.resource_types (resource_name, measurement_unit_id)
 VALUES
-	('GPU', 4),
-	('CPU', 4),
+	('GPU', 3),
+	('CPU', 3),
 	('RAM', 2),
-	('Filesystem', 3),
+	('Filesystem', 1),
     ('Network', 1);
 
 -- Insert resource specifications

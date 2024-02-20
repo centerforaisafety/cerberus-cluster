@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Description:
-#   This script calculates and records the daily usage of GPU resources by paid users. 
+#   This script check and records the existence of any paid partitions. 
 #   It retrieves usage data, distinguishes between different GPU types (A100 and H100), 
 #   and inserts summarized data into a database for billing purposes.
 #
@@ -152,4 +152,3 @@ insert_gpu_usage_into_db() {
 get_paid_users_from_db
 get_gpu_usage_per_user
 insert_gpu_usage_into_db
-

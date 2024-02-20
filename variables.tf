@@ -226,7 +226,7 @@ variable "billing" {
 
 variable "billing_mysql_db_admin_username" { 
   type = string
-  default = "root"
+  default = "opc"
 }
 
 variable "billing_mysql_db_admin_password" { 

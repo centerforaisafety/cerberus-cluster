@@ -85,3 +85,30 @@
     path: /etc/cron.d/ksplice
     state: absent
   when: "'/etc/cron.d/ksplice' is file"
+
+# Install iptables-services
+#- name: Install iptables-services
+#  vars: 
+#    package_name: 
+#      - iptables-services
+#    package_state: latest
+#   package_repo: "ol7_latest"
+#  include_role: 
+#    name: safe_yum
+#  ignore_errors: true
+
+# Enable iptables-services ipv4
+#- name: Enable iptables-services ipv4
+#  become: true
+#  service:
+#    name: iptables
+#    enabled: yes
+#    state: started
+
+# Enable iptables-services ipv6
+#- name: Enable iptables-services ipv6
+#  become: true
+#  service:
+#    name: ip6tables
+#    enabled: yes
+#    state: started

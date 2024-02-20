@@ -25,7 +25,7 @@
 #
 
 # Gather list of hosts from Slurm
-PARTITION='' # Add paid partition
+PARTITION='grayswan' # Add paid partition
 HOSTS=$(sudo sinfo -p $PARTITION -S "%n" -o "%n" | tail -n +2)
 
 # Global Variables
@@ -34,7 +34,7 @@ START_TIME=$(date -d "-1 hour" +"%Y-%m-%d %H:00:00")
 END_TIME=$(date -d "-1 hour" +"%Y-%m-%d %H:59:59")
 MYSQL_HOST_IP=$(grep 'billing_mysql_ip' /etc/ansible/hosts | cut -d '=' -f2)
 MYSQL_USERNAME=$(grep 'billing_mysql_db_admin_username' /etc/ansible/hosts | cut -d '=' -f2)
-MYSQL_PASSWORD=$(grep 'billing_mysql_db_admin_password' ansible_hosts_file | cut -d '=' -f2)
+MYSQL_PASSWORD=$(grep 'billing_mysql_db_admin_password' /etc/ansible/hosts | cut -d '=' -f2)
 DB_NAME='billing'
 declare -A TOTAL_NETWORK_USAGE_PER_USER
 
@@ -43,8 +43,9 @@ declare -A TOTAL_NETWORK_USAGE_PER_USER
 #   $1 - Hostname
 get_network_usage_per_user() {
     local host=$1
-    local IPTABLE_CMD='sudo iptables -L USER_TRAFFIC -v -n | awk '\''NR>3 {print $2, $13}'\'' && sudo iptables -Z USER_TRAFFIC'
-    ssh "$host" "$IPTABLE_CMD"
+    local IPTABLE_CMD='sudo iptables -L USER_TRAFFIC -v -x -n | awk '\''NR>3 {print $2, $13}'\'' && sudo iptables -Z USER_TRAFFIC'
+    RESULT=$(ssh "$host" "$IPTABLE_CMD")
+    echo "$RESULT"
 }
 
 # Function to process and accumulate network usage
@@ -76,16 +77,22 @@ insert_network_usage_into_db() {
     sql+=$(IFS=','; echo "${sql_values[*]}")
     sql+=";"
 
-    mysql -h $MYSQL_HOST_IP -u $MYSQL_USERNAME -p$MYSQL_PASSWORD $DB_NAME -e "$sql"
+    mysql -h $MYSQL_HOST_IP -u $MYSQL_USERNAME -p$MYSQL_PASSWORD $DB_NAME -e "$sql" 2>&1 | grep -v "mysql"
 }
 
 # Main script logic
-# Iterate over each host to gather and process network usage data
+# Iterate over each host to gather network usage data. If we have data then process it. 
 for host in $HOSTS; do
     usage_per_user=$(get_network_usage_per_user "$host")
+    
+    # Check if the result is empty
+    if [ -z "$usage_per_user" ]; then
+        echo 'empty'
+        continue
+    fi
+
     process_network_usage "$usage_per_user"
 done
 
 # Insert the accumulated network usage data into the database
 insert_network_usage_into_db
-

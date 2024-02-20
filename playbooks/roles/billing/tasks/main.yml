@@ -58,3 +58,4 @@
     user: '{{ ansible_user }}'
     job: "/opt/oci-hpc/billing/billing_network_egress.sh"
     disabled: true
+
