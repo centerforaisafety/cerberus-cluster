@@ -1,0 +1,92 @@
+#!/bin/bash
+
+# Description:
+#   This script automates the process of collecting weka filesystem usage data for specific paid users from the Weka filesystem. 
+#   After extracting the relevant usage data, the script aggregates this information and inserts it into a MySQL database. 
+
+# Features:
+#   - Efficient Data Collection: Gathers filesystem usage data from the Weka filesystem for a predefined set of paid users.
+#   - Data Filtering: Isolates the usage data of interest by filtering out non-paid users.
+#   - Database Integration: Inserts the processed data into a MySQL database using a single, efficient batch INSERT query.
+#   - Customizable User List: Currently uses a static list of paid users, but can be modified to dynamically fetch this list from an external source.
+
+# Usage:
+#   1. This script should be scheduled to run hourly with a cron job.
+#      - Example cron job: 0 * * * * /opt/oci-hpc/billing/billing_filesystem_usage.sh
+
+
+# Requirements:
+#   - Bash shell environment.
+#   - Access to the Weka filesystem with the necessary permissions to execute the 'weka fs quota list' command.
+#   - MySQL client installed and network access to the MySQL database server.
+#   - Necessary permissions to execute and schedule the script in the operating environment.
+
+# Global Variables
+TABLE='usage_records'
+START_TIME=$(date -d "-1 hour" +"%Y-%m-%d %H:00:00")
+END_TIME=$(date -d "-1 hour" +"%Y-%m-%d %H:59:59")
+MYSQL_HOST_IP=$(grep 'billing_mysql_ip' /etc/ansible/hosts | cut -d '=' -f2)
+MYSQL_USERNAME=$(grep 'billing_mysql_db_admin_username' /etc/ansible/hosts | cut -d '=' -f2)
+MYSQL_PASSWORD=$(grep 'billing_mysql_db_admin_password' /etc/ansible/hosts | cut -d '=' -f2)
+DB_NAME='billing'
+declare -A TOTAL_FILESYSTEM_USAGE_PER_USER
+
+# Associative array of paid users
+declare -A PAID_USERS
+
+# Function to get a list of paid users from the database
+get_paid_users_from_db() {
+    local sql="SELECT user_name, user_id FROM users"
+    local result=$(mysql -h $MYSQL_HOST_IP -u $MYSQL_USERNAME -p$MYSQL_PASSWORD $DB_NAME -e "$sql" 2>&1 | grep -v "mysql")
+
+    # Check if the result is empty
+    if [ -z "$result" ]; then
+        return 0
+    fi
+
+    while read -r line; do
+        local USERNAME USER_ID
+        read -r USERNAME USER_ID <<< $(awk '{print $1, $2}' <<< "$line")
+        PAID_USERS[$USERNAME]=$USER_ID
+    done <<< "$result"
+}
+
+# Function to get weka filesystem usage per user
+get_filesystem_usage_per_user() {
+    local usage_per_user=$(weka fs quota list --all --raw-units --output path,used | sed 's/default:\///')
+    while read -r line; do
+        local USER_NAME BYTES
+        read -r USER_NAME BYTES <<< $(awk '{print $1, $2}' <<< "$line")
+        
+        # Filter for paid users only
+        if [[ ${PAID_USERS[$USER_NAME]+_} ]]; then
+            USER_ID=${PAID_USERS[$USER_NAME]}
+            TOTAL_FILESYSTEM_USAGE_PER_USER[$USER_ID]=$BYTES
+        fi
+    done <<< "$usage_per_user"
+}
+
+# Function to insert filesystem usage data into the database with a single INSERT query
+insert_filesystem_usage_into_db() {
+    local sql_values=()
+    for user_id in "${!TOTAL_FILESYSTEM_USAGE_PER_USER[@]}"; do
+        local bytes=${TOTAL_FILESYSTEM_USAGE_PER_USER[$user_id]}
+        sql_values+=("($user_id, 3, '$START_TIME', '$END_TIME', $bytes)")
+    done
+
+    if [ ${#sql_values[@]} -eq 0 ]; then
+        # No data to insert
+        return
+    fi
+
+    local sql="INSERT INTO $TABLE (user_id, resource_spec_id, usage_start_time, usage_end_time, usage_amount) VALUES "
+    sql+=$(IFS=','; echo "${sql_values[*]}")
+    sql+=";"
+
+    mysql -h $MYSQL_HOST_IP -u $MYSQL_USERNAME -p$MYSQL_PASSWORD $DB_NAME -e "$sql" 2>&1 | grep -v "mysql"
+}
+
+# Main script logic
+get_paid_users_from_db
+get_filesystem_usage_per_user
+insert_filesystem_usage_into_db

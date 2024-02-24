@@ -1,0 +1,61 @@
+---
+- name: Ensure billing directory exists
+  file:
+    path: "/opt/oci-hpc/billing"
+    state: directory
+    owner: '{{ ansible_user }}'
+    group: '{{ ansible_user }}'
+
+- name: Copy files
+  become: true
+  copy:
+    src: '{{ item }}'
+    dest: '/opt/oci-hpc/billing/{{ item }}'
+    force: no
+    owner: '{{ ansible_user }}'
+    group: '{{ ansible_user }}'
+  with_items:
+    - billing.sql
+
+- name: Copy scripts
+  become: true
+  copy: 
+    src: '{{ item }}'
+    dest: '/opt/oci-hpc/billing/{{ item }}'
+    force: no
+    owner: '{{ ansible_user }}'
+    group: '{{ ansible_user }}'
+    mode: 0755
+  with_items:
+    - billing_filesystem_usage.sh
+    - billing_gpu_usage.sh
+    - billing_network_egress.sh
+
+- name: Create billing database
+  shell: "mysql -u {{ billing_mysql_db_admin_username }} -h {{ billing_mysql_ip }} -p{{ billing_mysql_db_admin_password }} < /opt/oci-hpc/billing/billing.sql"
+
+- name: Create a billing filesystem usage cron file under /etc/cron.d
+  cron:
+    name: billing filesystem usage
+    minute: "0"
+    user: '{{ ansible_user }}'
+    job: "/opt/oci-hpc/billing/billing_filesystem_usage.sh"
+    disabled: true
+
+- name: Create a billing gpu usage cron file under /etc/cron.d
+  cron:
+    name: billing gpu usage
+    minute: "0"
+    hour: "0"
+    user: '{{ ansible_user }}'
+    job: "/opt/oci-hpc/billing/billing_gpu_usage.sh"
+    disabled: true
+
+- name: Create a network egress usage cron file under /etc/cron.d
+  cron:
+    name: billing network egress usage
+    minute: "0"
+    user: '{{ ansible_user }}'
+    job: "/opt/oci-hpc/billing/billing_network_egress.sh"
+    disabled: true
+

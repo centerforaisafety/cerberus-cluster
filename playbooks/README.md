@@ -17,3 +17,7 @@ To install notifications run the notifications_install.yml and enter the slack_b
 For the webhooks go to [slack bot app](https://app.slack.com/app-settings/T04PVJTPVCJ/A05AGQ7HNBX) then Incoming Webhooks. Press Add new Webhook to Workspace at the bottom and select the channel you want notified for admin notifications. Copy the webhook and enter it when prompted during the above install
 
 To uninstall notifications run notifications_uninstall.yml. Note that this does not remove the MailProg entry from the slurm.conf. This won't cause problems but will be silently erroring in the slurmctld.log. So if you want to be clean you can remove that from the config.
+
+# Billing
+
+If the billing system has been deployed a final step needs to be performed before usage data will be collected. The `bash` scripts in `/etc/oci-hpc/billing` need to be scheduled with a cron job. Instructions for how each script should be scheduled can be found in the header section of each script. 

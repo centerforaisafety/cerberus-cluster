@@ -168,7 +168,12 @@ variableGroups:
       - ${pyxis}
       - ${pam}
       - ${sacct_limits}
-
+  - title: "Billing"
+    variables:
+      - ${billing}
+      - ${billing_shape_name}
+      - ${billing_mysql_db_admin_username}
+      - ${billing_mysql_db_admin_password}
   - title: "Hidden"
     variables:
       - ${region}
@@ -1561,3 +1566,34 @@ variables:
         - ${use_old_marketplace_image_login}
         - not:
           - ${use_standard_image_login}
+
+  billing:
+    type: boolean
+    title: "Enable billing"
+    default: false
+    description: "Enable billing for the cluster."
+    visible: true
+  
+  billing_shape_name:
+    type: string
+    title: "Billing Shape Name"
+    default: "MySQL.VM.Standard.E4.1.8GB"
+    required: true
+    description: "Billing Shape Name"
+    visible: ${billing}
+
+  billing_mysql_db_admin_username:
+    type: string
+    title: "MySQL Billing Admin DB username"
+    default: "opc"
+    required: true
+    description: ""
+    visible: ${billing}
+
+  billing_mysql_db_admin_password:
+    type: string
+    title: "MySQL Billing Admin DB password"
+    default: "Billing1234!"
+    description: "" 
+    required: true
+    visible: ${billing}

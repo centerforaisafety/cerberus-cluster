@@ -64,6 +64,7 @@ resource "local_file" "inventory" {
     instance_type=var.instance_type,
     monitoring=var.monitoring,
     autoscaling_monitoring = var.autoscaling_monitoring,
+    billing = var.billing,
     unsupported = var.unsupported,
     hyperthreading = var.hyperthreading,
     privilege_sudo = var.privilege_sudo,
