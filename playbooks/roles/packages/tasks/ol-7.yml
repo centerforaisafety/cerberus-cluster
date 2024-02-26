@@ -22,7 +22,7 @@
     name: [pip]
     state: latest
     executable: pip3
-  ignore_errors: yes
+  ignore_errors: true
   
 - name: install oci-cli latest version
   become: true
@@ -30,8 +30,10 @@
     name: [oci-cli]
     state: latest
     executable: pip3
-  ignore_errors: yes
-  when: ('bastion' in group_names)- name: Install SCL for GCC v7
+  ignore_errors: true
+  when: ('bastion' in group_names)
+  
+- name: Install SCL for GCC v7
   vars: 
     package_name: 
       - devtoolset-7-gcc.x86_64

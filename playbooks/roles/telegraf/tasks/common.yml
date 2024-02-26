@@ -19,7 +19,7 @@
 - name: Check for nvidia-smi
   shell: nvidia-smi
   register: nvidiasmi
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: copy telegraf.conf
   become: true

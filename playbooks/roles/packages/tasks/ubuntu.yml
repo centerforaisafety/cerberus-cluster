@@ -22,4 +22,4 @@
       name: [pip]
       state: latest
       executable: pip3
-    ignore_errors: yes
+    ignore_errors: true
