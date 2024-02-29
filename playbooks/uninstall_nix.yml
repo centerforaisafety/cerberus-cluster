@@ -1,43 +1,7 @@
 --- 
 
-- name: Remove socat client service
-  hosts: login
-  become: true
-  tasks:
-    - name: Gather service facts
-      service_facts:
-    - name: Stop socat client service
-      systemd:
-        name: socat-client.service
-        enabled: false
-        state: stopped
-        daemon_reload: true
-      when: "'socat-client.service' in services"
-    - name: Remove socat client service unit file
-      file: 
-        path: /etc/systemd/system/socat-client.service
-        state: absent
-
-- name: Remove socat server service
-  hosts: slurm_backup
-  become: true
-  tasks:
-    - name: Gather service facts
-      service_facts:
-    - name: Stop socat server service
-      systemd: 
-        name: socat-server.service
-        enabled: false
-        state: stopped
-        daemon_reload: true
-      when: "'socat-server.service' in services"
-    - name: Remove socat server service unit file
-      file: 
-        path: /etc/systemd/system/socat-server.service
-        state: absent
-
 - name: Remove nix daemon service
-  hosts: slurm_backup
+  hosts: all
   become: true
   tasks:
     - name: Gather service facts
@@ -66,7 +30,7 @@
   ignore_errors: true
   
 - name: Remove configuration files
-  hosts: slurm_backup
+  hosts: all
   become: true
   tasks:
     - file:
@@ -74,7 +38,7 @@
         state: absent
 
 - name: Unmount the /nix directory
-  hosts: login, bastion, slurm_backup, compute
+  hosts: all
   become: true
   tasks:
     - name: Unmount
@@ -85,19 +49,10 @@
       lineinfile:
         path: /etc/fstab
         state: absent
-        regexp: '\/data\/nix \/nix none bind 0 0'
-
-- name: Remove Nix store from shared filesystem
-  hosts: bastion
-  become: true
-  tasks:
-    - name: Remove /data/nix dir
-      file: 
-        path: /data/nix
-        state: absent
+        regexp: '\d{1,3}(\.\d{1,3}){3}:/nix /nix nfs defaults 0 0'
 
 - name: Remove files and dirs created by Nix
-  hosts: slurm_backup
+  hosts: all
   become: true
   tasks:
     - name: Remove /nix dir
@@ -158,7 +113,7 @@
         state: absent
 
 - name: Remove build users and their group
-  hosts: slurm_backup
+  hosts: all
   become: true
   tasks:
     - name: Remove nixbld users
@@ -171,7 +126,7 @@
   ignore_errors: true
 
 - name: Remove references to Nix
-  hosts: login, bastion, slurm_backup, compute
+  hosts: all
   become: true
   tasks:
     - name: Remove line from /etc/bashrc file
@@ -204,4 +159,3 @@
         path: /etc/bashrc
         block: ""
         marker: "# {mark} NIX ANSIBLE MANAGED BLOCK"
-
