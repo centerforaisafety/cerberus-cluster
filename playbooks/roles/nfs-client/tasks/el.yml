@@ -22,6 +22,7 @@
     opts: "{{ options }}"
     state: mounted
   when: options!=""
+  
 - name: Mount NFS without options
   mount:
     path: "{{ local_path }}"
