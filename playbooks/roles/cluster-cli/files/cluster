@@ -201,6 +201,33 @@ def add(user, password, uid, gid, name, nossh):
     os.system("sudo su - "+user+" -c "+"' ssh-keygen -t rsa -b 2048 -q -f "+homedir+".ssh/id_rsa -P \"\"' 2> /dev/null")
     os.system("sudo su - "+user+" -c "+"'mv "+homedir+".ssh/id_rsa.pub "+homedir+".ssh/authorized_keys' 2> /dev/null")
 
+@user.command()
+@click.argument('user_name')
+@click.option('-s', '--shell', default='/bin/bash', help='Specify the login shell for the user')
+def set_shell(user_name, shell):
+    """
+        Set the login shell for a user.
+    """
+    search_base = people_dn
+
+    server = ldap3.Server(host, use_ssl=True)
+    with ldap3.Connection(server, bind_dn, bind_pass, auto_bind=True) as conn:
+        search_filter = f'(uid={user_name})'
+        conn.search(search_base, search_filter, attributes=['uid'])
+        if len(conn.entries) == 0:
+            print(f"User {username} not found in LDAP")
+            return
+
+        user_dn = conn.entries[0].entry_dn
+
+        # Modify the login shell attribute
+        success = conn.modify(user_dn, {'loginShell': [(MODIFY_REPLACE, [shell])]})
+        if success:
+            print(f"Login shell for user {user_name} has been updated to {shell}.")
+        else:
+            print("Failed to update login shell.")
+            print(conn.result)
+
 
 @user.command()
 @click.argument('user')
