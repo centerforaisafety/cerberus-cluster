@@ -3,10 +3,10 @@
 # Variables (Replace these with actual values or pass them as arguments)
 lab_name='' # john_smith
 cluster_username='' # john_smith
-full_name='Steven Basart 3' # John Smith
-user_password='password'
-parent_account='root'
-ssh_key='ssh-key'
+full_name='' # John Smith
+user_password=''
+parent_account=''
+ssh_key=''
 
 # Function to exit script upon error
 function error_exit {
