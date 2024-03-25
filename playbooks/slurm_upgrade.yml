@@ -38,22 +38,22 @@
     - name: Download slurm .rpms
       get_url:
         url: "https://objectstorage.eu-frankfurt-1.oraclecloud.com/p/VnkLhYXOSNVilVa9d24Riz1fz4Ul-KTXeK4HCKoyqv0ghW3gry3Xz8CZqloqphLw/n/hpc/b/source/o/slurm/{{ item }}"
-        dest: "/data/slurm_rpms"
+        dest: "/tmp"
       with_items: "{{slurm_all_packages}}"
       delegate_to: 127.0.0.1
       run_once: true  
     - name: manually install all of the .rpms together (fails separately)
-      shell: yum install -y /data/slurm_rpms/{{slurm_all_packages[0]}} \
-        /data/slurm_rpms/{{slurm_all_packages[1]}} \
-        /data/slurm_rpms/{{slurm_all_packages[2]}} \
-        /data/slurm_rpms/{{slurm_all_packages[3]}} \
-        /data/slurm_rpms/{{slurm_all_packages[4]}} \
-        /data/slurm_rpms/{{slurm_all_packages[5]}} \
-        /data/slurm_rpms/{{slurm_all_packages[6]}} \
-        /data/slurm_rpms/{{slurm_all_packages[7]}} \
-        /data/slurm_rpms/{{slurm_all_packages[8]}} \
-        /data/slurm_rpms/{{slurm_all_packages[9]}} \
-        /data/slurm_rpms/{{slurm_all_packages[10]}}
+      shell: yum install -y /tmp/{{slurm_all_packages[0]}} \
+        /tmp/{{slurm_all_packages[1]}} \
+        /tmp/{{slurm_all_packages[2]}} \
+        /tmp/{{slurm_all_packages[3]}} \
+        /tmp/{{slurm_all_packages[4]}} \
+        /tmp/{{slurm_all_packages[5]}} \
+        /tmp/{{slurm_all_packages[6]}} \
+        /tmp/{{slurm_all_packages[7]}} \
+        /tmp/{{slurm_all_packages[8]}} \
+        /tmp/{{slurm_all_packages[9]}} \
+        /tmp/{{slurm_all_packages[10]}}
       # Needed in case you wish to rerun this playbook otherwise it'll error.
       ignore_errors: true
 
