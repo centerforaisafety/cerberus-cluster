@@ -14,6 +14,9 @@ function error_exit {
     exit 1
 }
 
+# Check if cluster command is available
+cluster || error_exit "Cluster command is not available."
+
 # Check if lab exists on the cluster
 if cluster group list | grep -w "$lab_name"; then
     echo "Lab already exists. Moving on to researcher onboarding."
