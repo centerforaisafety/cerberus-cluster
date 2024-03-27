@@ -272,7 +272,7 @@
     - name: Update node state on bastion
       become: true
       command: scontrol update nodename={{ ansible_hostname }} state=RESUME
-      when: not ansible_check_mode and (node_state2 != "idle") and (node_state2 != "alloc")
+      when: not ansible_check_mode and (node_state2 != "idle") and (node_state2 != "alloc") and (node_state2 != "mix")
   rescue:
     - name: Sleep 5 seconds
       pause: 
@@ -293,7 +293,7 @@
     - name: Update node state on bastion
       become: true
       command: scontrol update nodename={{ ansible_hostname }} state=RESUME
-      when: node_state2 != "idle" and node_state2 != "alloc"
+      when: node_state2 != "idle" and node_state2 != "alloc" and node_state2 != "mix"
       register: result
       retries: 10
       delay: 5
