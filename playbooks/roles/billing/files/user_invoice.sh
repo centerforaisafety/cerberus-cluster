@@ -1,5 +1,47 @@
 #!/bin/bash
 
+# Help function
+show_help() {
+cat << EOF
+Usage: ${0##*/} [options]
+
+This script generates and executes SQL queries to retrieve usage and cost information for specified resource specifications from a billing database.
+
+Options:
+  -h, --help        Display this help and exit
+
+The script does not require any arguments for its operation. It automatically determines the account name based on the executing user's group name and retrieves billing information for that account.
+
+Prerequisites:
+  - MySQL client installed and accessible in the PATH
+  - Properly configured MySQL credentials within the script
+
+EOF
+}
+
+# Parse options
+while :; do
+    case $1 in
+        -h|--help)
+            show_help
+            exit
+            ;;
+        --) # End of all options
+            shift
+            break
+            ;;
+        -*)
+            echo "Error: Unknown option: $1" >&2
+            show_help
+            exit 1
+            ;;
+        *)  # No more options
+            break
+            ;;
+    esac
+    shift
+done
+
 # Functions
 generate_sql_query() {
     local resource_spec_id="$1"
@@ -44,10 +86,10 @@ EOF
 }
 
 # MySQL credentials
-DB_HOST="172.16.7.207"
-DB_USER="opc"
-DB_PASS="Billing1234!"
-DB_NAME="billing"
+DB_HOST=""
+DB_USER=""
+DB_PASS=""
+DB_NAME=""
 
 # Set account filter
 account_name=$(id -gn)
