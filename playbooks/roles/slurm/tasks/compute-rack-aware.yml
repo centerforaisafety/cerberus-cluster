@@ -264,6 +264,7 @@
 - name: Update node state on controller
   block:
     - name: Grab Node State
+      become: true
       shell: 'sinfo -h -o "%t" -n {{ ansible_hostname }}'
       register: node_state
       delegate_to: 127.0.0.1
@@ -279,6 +280,7 @@
         seconds: 10
 
     - name: Grab Node State
+      become: true
       shell: 'sinfo -h -o "%t" -n {{ ansible_hostname }}'
       register: node_state
       delegate_to: 127.0.0.1
