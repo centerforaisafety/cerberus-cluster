@@ -17,3 +17,17 @@ To install notifications run the notifications_install.yml and enter the slack_b
 For the webhooks go to [slack bot app](https://app.slack.com/app-settings/T04PVJTPVCJ/A05AGQ7HNBX) then Incoming Webhooks. Press Add new Webhook to Workspace at the bottom and select the channel you want notified for admin notifications. Copy the webhook and enter it when prompted during the above install
 
 To uninstall notifications run notifications_uninstall.yml. Note that this does not remove the MailProg entry from the slurm.conf. This won't cause problems but will be silently erroring in the slurmctld.log. So if you want to be clean you can remove that from the config.
+
+## Passwordless SSH for Root User
+
+We provide playbooks to enable and disable passwordless SSH for the root user. This feature is typically required for automated administrative tasks such as software upgrades, for example with Weka. Caution: Enabling passwordless SSH for the root user poses significant security risks. Be sure to disable it as soon as it is no longer necessary.
+
+Prerequisites:
+- Ensure that SSH key pairs (root and root.pub) are created. If you haven’t already, you can generate them using the following command: `ssh-keygen -f /home/opc/.ssh/root -N ''`
+- Place the keys in the /home/opc/.ssh/ directory.
+
+Enabling Passwordless SSH: `ansible-playbook passwordless_ssh_for_root_enable.yml`
+
+Disabling Passwordless SSH: `ansible-playbook passwordless_ssh_for_root_disable.yml`
+
+Note: Always ensure that passwordless SSH is disabled when not actively needed to maintain the security integrity of your system.
