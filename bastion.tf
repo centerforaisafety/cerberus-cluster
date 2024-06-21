@@ -295,7 +295,11 @@ resource "null_resource" "cluster" {
       region = var.region,
       tenancy_ocid = var.tenancy_ocid,
       api_fingerprint = var.api_fingerprint,
-      api_user_ocid = var.api_user_ocid
+      api_user_ocid = var.api_user_ocid,
+      billing = var.billing,
+      billing_mysql_db_admin_username = var.billing_mysql_db_admin_username,
+      billing_mysql_db_admin_password = var.billing_mysql_db_admin_password,
+      billing_mysql_ip = var.billing ? oci_mysql_mysql_db_system.billing_mysql_db_system[0].ip_address : ""
       })
 
     destination   = "/opt/oci-hpc/playbooks/inventory"
@@ -433,7 +437,11 @@ resource "null_resource" "cluster" {
       compute_username = var.compute_username,
       pam = var.pam,
       sacct_limits = var.sacct_limits, 
-      use_compute_agent = var.use_compute_agent
+      use_compute_agent = var.use_compute_agent,
+      billing = var.billing,
+      billing_mysql_db_admin_username = var.billing_mysql_db_admin_username,
+      billing_mysql_db_admin_password = var.billing_mysql_db_admin_password,
+      billing_mysql_ip = var.billing ? oci_mysql_mysql_db_system.billing_mysql_db_system[0].ip_address : ""
       })
 
     destination   = "/opt/oci-hpc/conf/variables.tf"

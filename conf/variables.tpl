@@ -123,7 +123,6 @@ variable "ldap" { default = ${ldap} }
 variable "monitoring" { default = ${monitoring} }
 variable "autoscaling_monitoring" { default = ${autoscaling_monitoring} }
 
-
 variable "tags" { default = "##TAGS##" }
 variable "private_deployment" { default = ${private_deployment} }
 variable "use_multiple_ads" { default = ${use_multiple_ads} }
@@ -135,3 +134,8 @@ variable "log_vol" { default = "${log_vol}" }
 variable "redundancy" { default = "${redundancy}" }
 
 variable "instance_pool_ocpus_denseIO_flex" { default = "##OCPU##"}
+
+variable "billing" { default = "${billing}" }
+variable "billing_mysql_db_admin_username" { default = "${billing_mysql_db_admin_username}" }
+variable "billing_mysql_db_admin_password" { default = "${billing_mysql_db_admin_password}" }
+variable "billing_mysql_ip" { default = "$billing_mysql_ip" }

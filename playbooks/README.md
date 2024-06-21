@@ -18,6 +18,10 @@ For the webhooks go to [slack bot app](https://app.slack.com/app-settings/T04PVJ
 
 To uninstall notifications run notifications_uninstall.yml. Note that this does not remove the MailProg entry from the slurm.conf. This won't cause problems but will be silently erroring in the slurmctld.log. So if you want to be clean you can remove that from the config.
 
+# Billing
+
+If the billing system has been deployed a final step needs to be performed before usage data will be collected. The cluster resource usage collection scripts in `/etc/oci-hpc/billing` need to be scheduled in crontab. Each collection script has certain requirements that need to be met before they can be used. More details can be found by reviewing the scripts or by running the scripts with the `-h` or `--help` options. Once the requirements have been satisfied, uncomment the entries in `crontab -e` to begin collecting usage data. 
+
 ## Passwordless SSH for Root User
 
 We provide playbooks to enable and disable passwordless SSH for the root user. This feature is typically required for automated administrative tasks such as software upgrades, for example with Weka. Caution: Enabling passwordless SSH for the root user poses significant security risks. Be sure to disable it as soon as it is no longer necessary.
