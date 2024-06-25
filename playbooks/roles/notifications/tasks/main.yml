@@ -1,11 +1,11 @@
 - name: Download the goslmailer release
-  include: download_goslmailer.yml
+  include_tasks: download_goslmailer.yml
 
 - name: Perform Required File operations for goslmailer
-  include: goslmailer_file_ops.yml
+  include_tasks: goslmailer_file_ops.yml
 
 - name: Install strigger scripts
-  include: admin_notifications_install.yml
+  include_tasks: admin_notifications_install.yml
 
 - name: Delete /tmp/Goslmailer directory
   file:
