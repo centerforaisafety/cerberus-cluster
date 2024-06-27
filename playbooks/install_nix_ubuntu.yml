@@ -1,0 +1,124 @@
+---
+
+- name: Check whether Nix is already installed
+  hosts: login
+  become: true
+  tasks:
+    - name: Call the nix command to see if it is defined
+      shell: |
+        . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+        nix --version
+      ignore_errors: true
+      changed_when: false
+      register: nix_version_output
+    - name: Stop if Nix is installded
+      fail:
+      when: nix_version_output.rc == 0
+
+# install nix
+- name: Install Nix
+  hosts: login
+  become: true
+  tasks:
+    - include_role:
+        name: nix
+
+- name: Create NFS share on login node
+  hosts: login
+  become: true
+  vars:
+    export_path: "/nix"
+    export_name: "nix"
+    local_path:  "/nix"
+  tasks:
+    - include_role:
+        name: nfs-server
+
+- name: Mount NFS share on all other nodes
+  hosts: controller, slurm_backup, compute
+  become: true
+  tasks:
+    - include_role:
+        name: nfs-client
+      vars:
+        local_path: "/nix"
+        export_host: "{{ hostvars[groups['login'][0]]['ansible_default_ipv4']['address'] }}"
+        options: ""
+        export_path: "/nix"
+
+- name: Move nix.conf file
+  hosts: login
+  become: true
+  tasks:
+    - name: Move nix.conf file
+      command: mv /etc/nix/nix.conf /nix/nix.conf
+
+- name: Add bash function for nix command
+  hosts: login
+  become: true
+  tasks: 
+    - name: Add bash function
+      blockinfile:
+        path: /etc/bash.bashrc
+        block: |
+          nix-install() {
+              command="nix-env -iA nixpkgs.$1"
+              shift
+              for arg in "$@"; do
+                  command+=" nixpkgs.$arg"
+              done
+              echo "$command"
+              eval "$command"
+          }
+
+          nix-remove() {
+              command="nix-env -e $1"
+              shift
+              for arg in "$@"; do
+                  command+=" $arg"
+              done
+              echo "$command"
+              eval "$command"
+          }
+
+          nix-upgrade() {
+              command="nix-env -u $1"
+              shift
+              for arg in "$@"; do
+                  command+=" $arg"
+              done
+              echo "$command"
+              eval "$command"
+          }
+
+          nix-list() {
+              command="nix-env -q"
+              eval "$command"
+          }
+
+          nix-search() {
+              command="nix-env -qaP $1"
+              eval "$command"
+          }
+        marker: "# {mark} NIX ANSIBLE MANAGED BLOCK"
+        state: present
+
+- name: Set Nix environment variables
+  hosts: login
+  become: true
+  tasks:
+    - name: Set NIX_CONF_DIR environment variable
+      lineinfile:
+        path: /etc/bashrc
+        line: export NIX_CONF_DIR=/nix
+        create: yes
+
+- name: Add Nix binaries to path
+  hosts: controller, slurm_backup, compute
+  become: true
+  tasks:
+    - name: Add Nix binaries to /etc/bashrc file
+      lineinfile:
+        path: /etc/bashrc
+        line: export PATH=~/.nix-profile/bin:$PATH
+        create: yes
