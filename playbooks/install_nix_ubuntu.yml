@@ -109,7 +109,7 @@
   tasks:
     - name: Set NIX_CONF_DIR environment variable
       lineinfile:
-        path: /etc/bashrc
+        path: /etc/bash.bashrc
         line: export NIX_CONF_DIR=/nix
         create: yes
 
@@ -117,8 +117,8 @@
   hosts: controller, slurm_backup, compute
   become: true
   tasks:
-    - name: Add Nix binaries to /etc/bashrc file
+    - name: Add Nix binaries to /etc/bash.bashrc file
       lineinfile:
-        path: /etc/bashrc
+        path: /etc/bash.bashrc
         line: export PATH=~/.nix-profile/bin:$PATH
         create: yes

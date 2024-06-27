@@ -12,8 +12,7 @@
 - name: Install glog
   vars: 
     package_name: 
-      - libglog0v5
-      - libglog-dev
+      - libgoogle-glog-dev
     package_state: latest
   include_role: 
     name: safe_yum
@@ -25,20 +24,15 @@
       - golang
       - golang-go
       - golang-doc
-      - vim-gocomplete
     package_state: latest
   include_role: 
     name: safe_yum
   ignore_errors: true
 
-- name: Install gcc
+- name: Install dev tools
   vars: 
     package_name: 
-      - gcc
-      - g++
-      - gdb
-      - gfortran
-      - gcc-plugin-dev
+      - build-essential
     package_state: latest
   include_role: 
     name: safe_yum
