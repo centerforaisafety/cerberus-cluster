@@ -154,7 +154,8 @@ variable "api_user_key" { default = ""}
 variable "api_fingerprint" { default = ""}
 variable "api_user_ocid" { default = ""} 
 variable "home_nfs" { default = true } 
-variable "home_fss" { default = false } 
+variable "home_fss" { default = false }
+variable "home_weka" { default = false }
 variable "configure" { default = true }
 
 variable "hyperthreading" { default = true }
