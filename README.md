@@ -312,8 +312,6 @@ When the cluster is already being destroyed, it will have a file `/opt/oci-hpc/a
 
 To do it manually, in your browser of choice, navigate to controllerIP:3000. Username and password are admin/admin, you can change those during your first login. Go to Configuration -> Data Sources. Select autoscaling. Enter Password as Monitor1234! and click on 'Save & test'. Now click on the + sign on the left menu bar and select import. Click on Upload JSON file and upload the file the is located at `/opt/oci-hpc/playbooks/roles/autoscaling_mon/files/dashboard.json`. Select autoscaling (MySQL) as your datasource. 
 
-To do it manually, in your browser of choice, navigate to bastionIP:3000. Username and password are admin/admin, you can change those during your first login. Go to Configuration -> Data Sources. Select autoscaling. Enter Password as Monitor1234! and click on 'Save & test'. Now click on the + sign on the left menu bar and select import. Click on Upload JSON file and upload the file the is located at `/opt/oci-hpc/playbooks/roles/autoscaling_mon/files/dashboard.json`. Select autoscaling (MySQL) as your datasource.
-
 You will now see the dashboard.
 
 # LDAP 
@@ -337,8 +335,6 @@ If "true", this will create a private endpoint in order for Oracle Resource Mana
 * If "Use Existing Subnet" is also true, the user must indicate a private subnet for the controller VM. For the compute nodes, they can reside in another private subnet or the same private subent as the controller VM. 
 
 The controller VM will reside in a private subnet. Therefore, the creation of a "controller service" (https://docs.oracle.com/en-us/iaas/Content/controller/Concepts/controlleroverview.htm), a VPN or FastConnect connection is required. If a public subnet exists in the VCN, adapting the security lists and creating a jump host can also work. Finally, a Peering can also be established betwen the private subnet and another VCN reachable by the user.
-
-The bastion VM will reside in a private subnet. Therefore, the creation of a ["bastion service"](https://docs.oracle.com/en-us/iaas/Content/Bastion/Concepts/bastionoverview.htm), a VPN or FastConnect connection is required. If a public subnet exists in the VCN, adapting the security lists and creating a jump host can also work. Finally, a Peering can also be established betwen the private subnet and another VCN reachable by the user.
 
 ## max_nodes_partition.py usage
 

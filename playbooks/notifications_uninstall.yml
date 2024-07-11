@@ -1,5 +1,5 @@
 - name: Uninstall goslmailer
-  hosts: bastion, slurm_backup
+  hosts: controller, slurm_backup
   gather_facts: false
   become: true
   tasks:
@@ -60,7 +60,7 @@
         daemon_reload: true
 
 - name: Remove striggers for admin notifications
-  hosts: bastion
+  hosts: controller
   gather_facts: false
   become: true
   vars:

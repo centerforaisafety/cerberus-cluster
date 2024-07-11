@@ -1,5 +1,5 @@
 - name: Download and configure goslmailer. Copy strigger scripts to their appropriate location
-  hosts: bastion, slurm_backup
+  hosts: controller, slurm_backup
   become: true
   vars_prompt:
     - name: slack_bot_token
@@ -13,7 +13,7 @@
         name: notifications
 
 - name: Set Slurm Triggers
-  hosts: bastion
+  hosts: controller
   become: true
   become_user: slurm
   ignore_errors: true

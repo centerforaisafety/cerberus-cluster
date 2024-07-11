@@ -19,7 +19,7 @@ resource "oci_mysql_mysql_db_system" "billing_mysql_db_system" {
     count = var.billing ? 1 : 0
 
     # Required
-    availability_domain = var.bastion_ad
+    availability_domain = var.controller_ad
     compartment_id = var.targetCompartment
     shape_name = var.billing_shape_name
     subnet_id = local.subnet_id

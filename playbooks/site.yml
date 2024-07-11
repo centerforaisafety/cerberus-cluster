@@ -339,10 +339,10 @@
     - include_role:
         name: cais-all
 
-- hosts: bastion,login
+- hosts: controller,login
   tasks:
     - include_role:
-        name: cais-bastion-login
+        name: cais-controller-login
 
 - hosts: compute
   tasks: 
