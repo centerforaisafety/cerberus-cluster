@@ -4,7 +4,7 @@
     - debug:
         msg: "Gathering facts"
 
-- hosts: bastion, slurm_backup
+- hosts: controller, slurm_backup
   become: true
   tasks:
     - name: Stop Slurm DB Daemon
@@ -57,7 +57,7 @@
       # Needed in case you wish to rerun this playbook otherwise it'll error.
       ignore_errors: true
 
-- hosts: bastion, slurm_backup
+- hosts: controller, slurm_backup
   become: true
   tasks:
     - name: Safely restart the Database
@@ -98,7 +98,7 @@
     - include_role:
         name: tuned
 
-- hosts: bastion,slurm_backup,compute,login
+- hosts: controller,slurm_backup,compute,login
   gather_facts: true
   vars:
     destroy: false

@@ -35,7 +35,7 @@
         name: nfs-server
 
 - name: Mount NFS share on all other nodes
-  hosts: bastion, slurm_backup, compute
+  hosts: controller, slurm_backup, compute
   become: true
   tasks:
     - include_role:
@@ -114,7 +114,7 @@
         create: yes
 
 - name: Add Nix binaries to path
-  hosts: bastion, slurm_backup, compute
+  hosts: controller, slurm_backup, compute
   become: true
   tasks:
     - name: Add Nix binaries to /etc/bashrc file
