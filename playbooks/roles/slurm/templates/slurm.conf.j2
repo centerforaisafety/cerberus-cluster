@@ -22,6 +22,8 @@ SlurmdLogFile=/var/log/slurm/slurmd.log
 StateSaveLocation={{ slurm_nfs_path }}/spool/slurm
 SwitchType=switch/none
 TaskPlugin=task/affinity,task/cgroup
+# Needed to prevent slurm from allocating nodes dedicated to Weka
+TaskPluginParam=SlurmdOffSpec
 #JobContainerType=job_container/tmpfs
 InactiveLimit=0
 KillWait=120
@@ -44,6 +46,7 @@ JobAcctGatherFrequency=30
 JobAcctGatherType=jobacct_gather/linux
 SlurmctldDebug=info
 SlurmdDebug=info
+DebugFlags=cgroup
 EnforcePartLimits=ALL
 # Default Memory Per GPU in MB
 DefMemPerGPU=200000
@@ -93,6 +96,16 @@ JobCompType=jobcomp/none
 TrackWckey=no
 {% endif %}
 
+# Preemption
+PreemptType=preempt/partition_prio
+PreemptMode=REQUEUE,GANG
+
+
+
+{% if (groups['login']| length ) > 0 %}
+NodeName={{ hostvars[groups['login'][0]]['ansible_fqdn'].split('.')[0] }}
+{% endif %}
+
 {% for partition in queues %}
 {% for instance in partition.instance_types %}
 Nodeset={{instance.name}} Feature={{instance.name}}
@@ -105,7 +118,7 @@ Nodeset={{instance.name}} Feature={{instance.name}}
 {% for instance in partition.instance_types %}
 {{ nodesList.append(instance.name)}}
 {%- endfor %}
-PartitionName={{partition.name}} Nodes={{nodesList|join(',')}} Default=YES DefaultTime=02:00:00 MaxTime=2-0 State=UP
+PartitionName={{partition.name}} Nodes={{nodesList|join(',')}} Default=YES DefaultTime=02:00:00 MaxTime=2-0 State=UP PriorityTier=1 PreemptMode=OFF
 {% else %}
 {% set nodesList = [] %}
 {% for instance in partition.instance_types %}
