@@ -21,6 +21,8 @@ SlurmdLogFile=/var/log/slurm/slurmd.log
 StateSaveLocation={{ slurm_nfs_path }}/spool/slurm
 SwitchType=switch/none
 TaskPlugin=task/affinity,task/cgroup
+# Needed to prevent slurm from allocating nodes dedicated to Weka
+TaskPluginParam=SlurmdOffSpec
 #JobContainerType=job_container/tmpfs
 InactiveLimit=0
 KillWait=120
@@ -43,6 +45,7 @@ JobAcctGatherFrequency=30
 JobAcctGatherType=jobacct_gather/linux
 SlurmctldDebug=info
 SlurmdDebug=info
+DebugFlags=cgroup
 EnforcePartLimits=ALL
 # Default Memory Per GPU in MB
 DefMemPerGPU=200000
@@ -91,6 +94,11 @@ JobCompType=jobcomp/none
 TrackWckey=no
 {% endif %}
 
+# Preemption
+PreemptType=preempt/partition_prio
+PreemptMode=REQUEUE,GANG
+
+
 
 {% if (groups['login']| length ) > 0 %}
 NodeName={{ hostvars[groups['login'][0]]['ansible_fqdn'].split('.')[0] }}
@@ -123,7 +131,9 @@ NodeName={{partition.name}}-{{instance.instance_keyword}}-node-[1-{{size}}] Boar
 {% elif instance.shape == "BM.GPU.B4.8" and threadspercore == 2 %}
 NodeName={{partition.name}}-{{instance.instance_keyword}}-node-[1-{{size}}] Boards=1 SocketsPerBoard=1 CoresPerSocket=255 ThreadsPerCore=1 State=FUTURE Features={% if instance.shape != instance.name%}{{ instance.shape }},{% endif %}{{ instance.name }} Gres=gpu:A100:8
 {% elif instance.shape == "BM.GPU.A100-v2.8" and threadspercore == 1 %}
-NodeName={{partition.name}}-{{instance.instance_keyword}}-node-[1-{{size}}] Boards=1 SocketsPerBoard=8 CoresPerSocket=16 ThreadsPerCore=1 State=FUTURE Features={% if instance.shape != instance.name%}{{ instance.shape }},{% endif %}{{ instance.name }} Gres=gpu:A100:8
+# Added 1.9 TB memory defined per each node
+# Added CpuSpecList=0-9,64-73 to exclude CPUs from Slurm that are dedicated to Weka
+NodeName={{partition.name}}-{{instance.instance_keyword}}-node-[1-{{size}}] Boards=1 SocketsPerBoard=8 CoresPerSocket=16 ThreadsPerCore=1 CpuSpecList=0-9,64-73 State=FUTURE Features={% if instance.shape != instance.name%}{{ instance.shape }},{% endif %}{{ instance.name }} Gres=gpu:A100:8 RealMemory=1900000
 {% elif instance.shape == "BM.GPU.A100-v2.8" and threadspercore == 2 %}
 NodeName={{partition.name}}-{{instance.instance_keyword}}-node-[1-{{size}}] Boards=1 SocketsPerBoard=1 CoresPerSocket=255 ThreadsPerCore=1 State=FUTURE Features={% if instance.shape != instance.name%}{{ instance.shape }},{% endif %}{{ instance.name }} Gres=gpu:A100:8
 {% elif instance.shape == "BM.GPU.H100.8" and threadspercore == 1 %}
@@ -199,7 +209,7 @@ NodeName={{partition.name}}-{{instance.instance_keyword}}-node-[1-{{size}}] Boar
 {% set size = instance.private_subnet | ipaddr('size')%}
 {{ nodesList.append(partition.name+'-'+instance.instance_keyword+'-node-[1-'+size|string+']')}}
 {%- endfor %}
-PartitionName={{partition.name}} Nodes={{nodesList|join(',')}} Default=YES DefaultTime=02:00:00 MaxTime=2-0 State=UP
+PartitionName={{partition.name}} Nodes={{nodesList|join(',')}} Default=YES DefaultTime=02:00:00 MaxTime=2-0 State=UP PriorityTier=1 PreemptMode=OFF
 {% else %}
 {% set nodesList = [] %}
 {% for instance in partition.instance_types %}
