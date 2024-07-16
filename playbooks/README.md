@@ -27,8 +27,8 @@ If the billing system has been deployed a final step needs to be performed befor
 We provide playbooks to enable and disable passwordless SSH for the root user. This feature is typically required for automated administrative tasks such as software upgrades, for example with Weka. Caution: Enabling passwordless SSH for the root user poses significant security risks. Be sure to disable it as soon as it is no longer necessary.
 
 Prerequisites:
-- Ensure that SSH key pairs (root and root.pub) are created. If you haven’t already, you can generate them using the following command: `ssh-keygen -f /home/opc/.ssh/root -N ''`
-- Place the keys in the /home/opc/.ssh/ directory.
+- Ensure that SSH key pairs (root and root.pub) are created. If you haven’t already, you can generate them using the following command: `ssh-keygen -f /home/ubuntu/.ssh/root -N ''`
+- Place the keys in the /home/ubuntu/.ssh/ directory.
 
 Enabling Passwordless SSH: `ansible-playbook passwordless_ssh_for_root_enable.yml`
 
