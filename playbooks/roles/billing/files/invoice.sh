@@ -152,7 +152,7 @@ main() {
   cost_divisor=$usage_divisor
    
   query=$(generate_sql_query "$resource_spec_id" "$usage_divisor" "$cost_divisor" "$ACCOUNT_NAME")
-  result=$(mysql --silent -B -e "${query}")
+  result=$(mysql --defaults-extra-file=/home/ubuntu/.billing.cnf --silent -B -e "${query}")
   if [ $? -ne 0 ]; then
     log_error "Error: Failed to process A100 usage."
     log_error "Exiting."
@@ -169,7 +169,7 @@ main() {
   cost_divisor=$usage_divisor
   
   query=$(generate_sql_query "$resource_spec_id" "$usage_divisor" "$cost_divisor" "$ACCOUNT_NAME")
-  result=$(mysql --silent -B -e "${query}")
+  result=$(mysql --defaults-extra-file=/home/ubuntu/.billing.cnf --silent -B -e "${query}")
   if [ $? -ne 0 ]; then
     log_error "Error: Failed to process network egress usage."
     log_error "Exiting."
@@ -186,7 +186,7 @@ main() {
   cost_divisor=$usage_divisor
   
   query=$(generate_sql_query "$resource_spec_id" "$usage_divisor" "$cost_divisor" "$ACCOUNT_NAME")
-  result=$(mysql --silent -B -e "${query}")
+  result=$(mysql --defaults-extra-file=/home/ubuntu/.billing.cnf --silent -B -e "${query}")
   if [ $? -ne 0 ]; then
     log_error "Error: Failed to process filesystem usage."
     log_error "Exiting."
