@@ -139,7 +139,7 @@ get_paid_users_from_database() {
   local result
 
   # Execute the SQL query
-  if ! result=$(mysql --login-path=billing -sN -e "$sql"); then
+  if ! result=$(mysql --defaults-extra-file=/home/ubuntu/.billing.cnf -sN -e "$sql"); then
     log_error "Error: Failed to execute SQL query: $sql"
     return 1
   fi
@@ -265,7 +265,7 @@ insert_filesystem_usage_into_db() {
 
   log_message "Executing SQL query to insert data into $TABLE."
 
-  if ! mysql --login-path=billing -e "$sql"; then
+  if ! mysql --defaults-extra-file=/home/ubuntu/.billing.cnf -e "$sql"; then
     log_error "Error: Failed to insert data into $TABLE"
     return 1
   fi
