@@ -276,7 +276,7 @@ save_network_usage_to_database() {
   sql+=";"
 
   # Execute query and handle errors 
-  if ! mysql --login-path=billing -e "$sql"; then
+  if ! mysql --defaults-extra-file=/home/ubuntu/.billing.cnf -e "$sql"; then
     log_error "Error: Failed to insert data into $TABLE: $result"
     return 1
   fi

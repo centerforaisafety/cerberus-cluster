@@ -1,0 +1,93 @@
+---
+- name: Ensure billing directory exists
+  file:
+    path: "/opt/oci-hpc/billing"
+    state: directory
+    owner: '{{ ansible_user }}'
+    group: '{{ ansible_user }}'
+
+- name: Copy files
+  become: true
+  copy:
+    src: '{{ item }}'
+    dest: '/opt/oci-hpc/billing/{{ item }}'
+    force: no
+    owner: '{{ ansible_user }}'
+    group: '{{ ansible_user }}'
+  with_items:
+    - billing.sql
+
+- name: Copy scripts
+  become: true
+  copy: 
+    src: '{{ item }}'
+    dest: '/opt/oci-hpc/billing/{{ item }}'
+    force: no
+    owner: '{{ ansible_user }}'
+    group: '{{ ansible_user }}'
+    mode: 0755
+  with_items:
+    - filesystem.sh
+    - gpu.sh
+    - network.sh
+    - invoice.sh
+
+- name: Create credentials file for MySQL authentication credentials for billing database
+  file:
+    path: "/home/ubuntu/.billing.cnf"
+    state: touch
+    mode: u=rw
+
+- name: Add content to credentials file
+  copy:
+    dest: "/home/ubuntu/.billing.cnf"
+    content: |
+      [client]
+      user={{ billing_mysql_db_admin_username }}
+      password={{ billing_mysql_db_admin_password }}
+      host={{ billing_mysql_ip }}
+
+- name: Check if database exists
+  shell: "mysql --defaults-extra-file=/home/ubuntu/.billing.cnf -e 'SHOW DATABASES LIKE \"billing\";'"
+  register: db_exists_result
+  ignore_errors: true
+
+- name: Set a fact based on the database existence
+  set_fact:
+    billing_database_exists: "{{ 'billing' in db_exists_result.stdout }}"
+
+- name: Create billing database
+  shell: "mysql --defaults-extra-file=/home/ubuntu/.billing.cnf < /opt/oci-hpc/billing/billing.sql"
+  when: not billing_database_exists
+
+- name: Create a billing filesystem usage cron file under /etc/cron.d
+  cron:
+    name: Collect filesystem usage for billing
+    minute: "0"
+    user: '{{ ansible_user }}'
+    job: "/opt/oci-hpc/billing/filesystem.sh"
+    disabled: true
+
+- name: Create a billing gpu usage cron file under /etc/cron.d
+  cron:
+    name: Collect gpu usage for billing
+    minute: "0"
+    hour: "0"
+    user: '{{ ansible_user }}'
+    job: "/opt/oci-hpc/billing/gpu.sh"
+    disabled: true
+
+- name: Create a network egress usage cron file under /etc/cron.d
+  cron:
+    name: network egress usage for billing
+    minute: "0"
+    user: '{{ ansible_user }}'
+    job: "/opt/oci-hpc/billing/network.sh"
+    disabled: true
+
+- name: Create example invoice cron file under /etc/cron.d
+  cron:
+    name: "Example: Generate invoice for {account_name}"
+    user: '{{ ansible_user }}'
+    job: "/opt/oci-hpc/billing/invoice.sh --verbose --account \"{account_name}\" | sudo tee /data/{account_name}/invoices/{account_name}_invoices.csv >/dev/null"
+    disabled: true

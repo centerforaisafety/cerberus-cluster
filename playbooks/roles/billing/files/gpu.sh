@@ -128,7 +128,7 @@ get_paid_users_from_database() {
   local result
 
   # Execute the SQL query
-  if ! result=$(mysql --login-path=billing -sN -e "$sql"); then
+  if ! result=$(mysql --defaults-extra-file=/home/ubuntu/.billing.cnf -sN -e "$sql"); then
     log_error "Error: Failed to execute SQL query: $sql"
     return 1
   fi
@@ -416,7 +416,7 @@ save_gpu_usage_to_database() {
   sql+=";"
 
   # Execute the SQL query and capture result
-  if ! mysql --login-path=billing -e "$sql"; then
+  if ! mysql --defaults-extra-file=/home/ubuntu/.billing.cnf -e "$sql"; then
     log_error "Error: Failed to insert data into $TABLE"
     return 1
   fi
