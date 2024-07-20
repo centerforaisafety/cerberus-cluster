@@ -10,20 +10,13 @@
     replace: '#\1\2\3swap\4'
     backup: yes
 
-- name: Install zsh
+- name: Install packages
   vars:
     package_name:
       - zsh
+      - git
+      - unzip
     package_state: latest
   include_role:
-    name: safe_yum
-  ignore_errors: true
-
-- name: Install git
-  vars: 
-    package_name: 
-      - git
-    package_state: latest
-  include_role: 
     name: safe_yum
   ignore_errors: true
