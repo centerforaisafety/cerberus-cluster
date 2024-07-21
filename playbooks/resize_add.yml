@@ -33,6 +33,30 @@
     - boot-volume
     - mpivars
 
+- name: Disable dynamic MOTD
+  hosts: compute_to_add
+  become: true
+  tasks:
+    - name: Find all files in /etc/update-motd.d
+      find:
+        paths: /etc/update-motd.d
+        recurse: no
+      register: motd_files
+    - name: Remove execute permissions for all files in /etc/update-motd.d
+      file:
+        path: "{{ item.path }}"
+        mode: 'u-x,g-x,o-x'
+      loop: "{{ motd_files.files }}"
+    - name: Ensure 50-landscape-sysinfo is a symbolic link
+      stat:
+        path: /etc/update-motd.d/50-landscape-sysinfo
+      register: motd_file
+    - name: Remove the symbolic link 50-landscape-sysinfo
+      file:
+        path: /etc/update-motd.d/50-landscape-sysinfo
+        state: absent
+      when: motd_file.stat.islnk is defined and motd_file.stat.islnk
+
 - hosts: compute_to_add
   become: true
   tasks: 
