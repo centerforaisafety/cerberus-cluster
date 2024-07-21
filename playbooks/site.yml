@@ -45,6 +45,53 @@
     - mpivars
     - iptables
 
+- name: Disable dynamic MOTD
+  hosts: all
+  become: true
+  tasks:
+    - name: Find all files in /etc/update-motd.d
+      find:
+        paths: /etc/update-motd.d
+        recurse: no
+      register: motd_files
+    - name: Remove execute permissions for all files in /etc/update-motd.d
+      file:
+        path: "{{ item.path }}"
+        mode: 'u-x,g-x,o-x'
+      loop: "{{ motd_files.files }}"
+    - name: Ensure 50-landscape-sysinfo is a symbolic link
+      stat:
+        path: /etc/update-motd.d/50-landscape-sysinfo
+      register: motd_file
+    - name: Remove the symbolic link 50-landscape-sysinfo
+      file:
+        path: /etc/update-motd.d/50-landscape-sysinfo
+        state: absent
+      when: motd_file.stat.islnk is defined and motd_file.stat.islnk
+      
+- name: Configure static MOTD
+  hosts: login
+  become: true
+  tasks:
+    - name: Ensure static MOTD
+      copy:
+        content: |
+          ⠀⠀⠀⠀⢀⡤⢂⣴⠾⠛⠷⢶⣤⡀⠀⠀⠀
+          ⠀⠀⠀⣴⠟⣁⣉⣁⣀⡀⠈⢶⡌⠻⢦⠀⠀
+          ⠀⠀⣸⡏⠜⠋⣩⡭⠉⠛⢷⢸⡇⠸⣦⡁⠀
+          ⠀⠀⢿⡄⠀⢰⡟⠀⠀⠀⠀⣼⠇⠀⠘⣷⠀
+          ⠀⠀⢈⠻⡆⢸⡇⢷⣤⣀⣚⣋⣠⡔⣸⡏⠀
+          ⠀⠀⠀⠳⣦⡘⠷⡀⠈⠉⢉⣉⢉⣴⠟⠀⠀
+          ⠀⠀⠀⠀⠈⠛⠷⢶⣤⡶⠟⠡⠚⠁⠀⠀⠀
+
+          Welcome to the Center for AI Safety Compute Cluster!
+
+          We've set the default allocated storage per user to be 500 GB.
+
+          The compute cluster is exclusively designated for work on pre-approved safety projects. Do not use it for any unapproved projects. Feel free to reach out on slack for any questions and have fun!
+        dest: /etc/motd
+        mode: '0644'
+
 - hosts: all
   become: true
   tasks: 
