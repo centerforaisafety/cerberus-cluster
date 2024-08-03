@@ -439,8 +439,20 @@ variable "home_nfs" {
   type = bool
   }
 variable "home_fss" { 
-  default = false
+  default = true
   type = bool
+  }
+variable "create_home_fss" { 
+  default = true 
+  type = bool
+  }
+variable "home_fss_source_IP" { 
+  default = ""
+  type = string
+  }
+variable "home_fss_source_path" { 
+  default = "/home"
+  type = string
   }
 variable "configure" { 
   default = true
