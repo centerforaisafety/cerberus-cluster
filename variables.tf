@@ -154,7 +154,10 @@ variable "api_user_key" { default = ""}
 variable "api_fingerprint" { default = ""}
 variable "api_user_ocid" { default = ""} 
 variable "home_nfs" { default = true } 
-variable "home_fss" { default = false } 
+variable "home_fss" { default = true } 
+variable "create_home_fss" { default = true }
+variable "home_fss_source_IP" { default = ""}
+variable "home_fss_source_path" { default = "/home"}
 variable "configure" { default = true }
 
 variable "hyperthreading" { default = true }
