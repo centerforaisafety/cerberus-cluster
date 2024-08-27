@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS billing.pricing (
     pricing_id INT AUTO_INCREMENT PRIMARY KEY,
     account_id INT NOT NULL,
     resource_spec_id INT NOT NULL,
-    price_per_unit DECIMAL(10, 2) NOT NULL,
+    price_per_unit DECIMAL(13,10) NOT NULL,
     price_effective_date DATE NOT NULL,
     price_end_date DATE,
     FOREIGN KEY (account_id) REFERENCES billing.accounts(account_id),
