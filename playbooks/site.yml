@@ -334,6 +334,11 @@
         name: billing
       when: billing|default(false)|bool
 
+- hosts: controller
+  tasks:
+    - include_role:
+        name: backups
+
 - hosts: compute
   become: true
   vars:
