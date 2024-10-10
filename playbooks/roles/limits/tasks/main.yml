@@ -1,10 +1,9 @@
---- 
-
-- include_tasks: common.yml
-  when: ansible_os_family == 'RedHat'
-
-- include_tasks: common.yml
-  when: ansible_distribution == 'Ubuntu'
-
-- include_tasks: common.yml
-  when: ansible_distribution == 'Debian'
+---
+- block:
+  - name: Install limits.conf 
+    template: 
+      src: "templates/limits.j2" 
+      dest: "/etc/security/limits.d/50-hpc-limits.conf" 
+      owner: root
+      group: root
+      mode: 0644

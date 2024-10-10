@@ -1,9 +1,0 @@
----
-
-- name: Update /etc/oci-hostname.conf
-  replace:
-    path: /etc/oci-hostname.conf
-    regexp: '^PRESERVE_HOSTINFO=.*'
-    replace: 'PRESERVE_HOSTINFO=2'
-  async: "{{ ansible_check_mode | ternary(0, 30) }}"
-  poll: 2

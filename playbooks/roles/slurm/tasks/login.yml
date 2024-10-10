@@ -5,7 +5,7 @@
     package_repo: "{{ slurm_repos }}"
     disable_gpg_check_var: True
   include_role: 
-    name: safe_yum
+    name: safe_apt
 
 - name: Render systemd units for slurmd
   become: true

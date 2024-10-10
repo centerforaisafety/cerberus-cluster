@@ -59,13 +59,6 @@
 
 - hosts: compute_to_add
   become: true
-  tasks: 
-    - include_role: 
-        name: localdisk
-      when: localdisk | default(true) | bool
-
-- hosts: compute_to_add
-  become: true
   gather_facts: true
   tasks: 
     - include_role: 
@@ -194,8 +187,6 @@
     - include_role: 
         name: nvidia-enroot
       when: enroot|default(true)|bool
-    - include_role:
-        name: tuned
     - include_role: 
         name: nccl-conf
       when: cluster_network|bool
@@ -220,14 +211,5 @@
         name: rack-aware
       when: rack_aware|default(false)|bool
     - include_role: 
-        name: spack
-      when: spack|default(false)|bool
-    - include_role: 
         name: slurm
       when: slurm|default(false)|bool
-    - include_role: 
-        name: influxdb
-      when: monitoring|default(false)|bool
-    - include_role: 
-        name: telegraf
-      when: monitoring|default(false)|bool

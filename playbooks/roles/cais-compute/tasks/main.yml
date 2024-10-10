@@ -1,11 +1,71 @@
-- include_tasks: ol-7.yml
-  when: ansible_os_family == 'RedHat' and ansible_distribution == 'OracleLinux' and ansible_distribution_major_version == '7'
+---
+- name: Install gflags
+  vars: 
+    package_name: 
+      - libgflags-dev
+      - libgflags2.2
+    package_state: latest
+  include_role: 
+    name: safe_apt
+  ignore_errors: true
 
-- include_tasks: centos-7.yml
-  when: ansible_os_family == 'RedHat' and ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
+- name: Install glog
+  vars: 
+    package_name: 
+      - libgoogle-glog-dev
+    package_state: latest
+  include_role: 
+    name: safe_apt
+  ignore_errors: true
 
-- include_tasks: ubuntu.yml
-  when: ansible_distribution == 'Ubuntu'
+- name: Install go
+  vars: 
+    package_name:
+      - golang
+      - golang-go
+      - golang-doc
+    package_state: latest
+  include_role: 
+    name: safe_apt
+  ignore_errors: true
 
-- include_tasks: debian.yml
-  when: ansible_distribution == 'Debian'
+- name: Install dev tools
+  vars: 
+    package_name: 
+      - build-essential
+    package_state: latest
+  include_role: 
+    name: safe_apt
+  ignore_errors: true
+
+- name: Install git-lfs
+  vars:
+    package_name:
+      - git-lfs
+    package_state: latest
+  include_role:
+    name: safe_apt
+  ignore_errors: true
+
+- name: Install openGL/Mesa
+  vars:
+    package_name:
+      - libosmesa6
+      - libosmesa6-dev
+      - libglfw3
+      - libglfw3-dev
+      - libgl1-mesa-glx
+      - libgl1-mesa-dev
+    package_state: latest
+  include_role:
+    name: safe_apt
+  ignore_errors: true
+
+- name: Install libaio for asynchronous I/O
+  vars:
+    package_name:
+      - libaio-dev
+    package_state: latest
+  include_role:
+    name: safe_apt
+  ignore_errors: true

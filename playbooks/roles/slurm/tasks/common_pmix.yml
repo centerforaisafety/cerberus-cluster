@@ -8,7 +8,7 @@
       - libevent-devel 
       - hwloc 
   include_role: 
-    name: safe_yum
+    name: safe_apt
   when: ansible_os_family == 'RedHat'
 
 - name: Download slurm .rpm
@@ -33,5 +33,5 @@
     package_name: '{{ pmix_packages }}'
     disable_gpg_check_var: True
   include_role:
-    name: safe_yum
+    name: safe_apt
   when: ansible_os_family == 'RedHat'

@@ -1,10 +1,71 @@
-- include_tasks: el.yml
-  when: ansible_os_family == 'RedHat'
+---
+#
+# Detecting MLX interface name by PCI ID. 
+# Another option is to detect the mlx5_core driver, but it's harder to tell whch interface can be activated 
+#
 
-- include_tasks: debian.yml
-  when: ansible_distribution == 'Ubuntu'
+- name: Are we running on an image with OCI-CN-AUTH packages? 
+  stat:
+    path: /sbin/oci-rdma-configure
+  register: new_image
 
-- include_tasks: debian.yml
-  when: ansible_distribution == 'Debian'
+- name: detect shape
+  uri:
+    url: http://169.254.169.254/opc/v2/instance/
+    method: GET
+    headers:
+      Authorization: 'Bearer Oracle'
+    return_content: yes
+  register: i_metadata
 
+- name: Change CIDR range for RDMA
+  become: true
+  replace:
+    path: /etc/oci-hpc/rdma-network.conf
+    regexp: 'rdma_network=192.168.0.0/255.255.0.0'
+    replace: 'rdma_network={{rdma_network}}/{{rdma_netmask}}'
 
+- name: Append subnet part to /etc/oci-hpc/rdma-network.conf
+  blockinfile:
+    path: /etc/oci-hpc/rdma-network.conf
+    block: |
+      [subnet]
+      modify_arp=true
+      override_netconfig_netmask={{rdma_netmask}}
+  when: new_image.stat.exists
+
+- name: Start the OCI RDMA service
+  become: true
+  service: 
+    name: oci-rdma-configure
+    state: started
+    enabled: yes
+  when: new_image.stat.exists
+
+- name: set fact
+  set_fact:
+    instance_metadata: "{{ i_metadata['content'] }}"
+  when: not ansible_check_mode
+
+- name: detect mellanox interfaces
+  set_fact:
+    ansible_mlx: "{% set ansible_mlx = ansible_mlx|default([]) + [hostvars[inventory_hostname]['ansible_' + item]] %}{{ ansible_mlx|list }}"
+  when: not ansible_check_mode and ( rdma_pci_ids[instance_metadata['shape']] is defined ) and ( hostvars[inventory_hostname]['ansible_' + item]['type'] == 'ether' ) and ( hostvars[inventory_hostname]['ansible_' + item]['pciid'] in rdma_pci_ids[instance_metadata['shape']]) and ( not new_image.stat.exists ) 
+  with_items:
+    - "{{ hostvars[inventory_hostname]['ansible_interfaces'] | sort }}"
+
+- name: create interface files
+  register: rdma_interface
+  template:
+    src: interface.j2
+    dest: "/etc/network/interfaces.d/{{ item['device'] }}"
+    mode: '0644'
+  when: ( ansible_mlx is defined ) and ( not new_image.stat.exists )  
+  loop: "{{ ansible_mlx }}"
+  loop_control:
+    index_var: index
+
+- name: restart_interface
+  command: bash -c "ifdown {{ item['item']['device'] }} && ifup {{ item['item']['device'] }}"
+  when: ( ansible_mlx is defined ) and ( item.changed|default(false) ) and ( not new_image.stat.exists )  
+  with_items: "{{ rdma_interface['results'] }}"

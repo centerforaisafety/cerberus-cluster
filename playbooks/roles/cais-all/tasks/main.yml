@@ -1,11 +1,29 @@
-- include_tasks: ol-7.yml
-  when: ansible_os_family == 'RedHat' and ansible_distribution == 'OracleLinux' and ansible_distribution_major_version == '7'
+---
+- name: Disable swap for current session
+  command: swapoff -a
+  become: true
 
-- include_tasks: centos-7.yml
-  when: ansible_os_family == 'RedHat' and ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
+- name: Disable swap permanently, persist reboots
+  replace:
+    path: /etc/fstab
+    regexp: '^(\s*)([^#\n]+\s+)(\w+\s+)swap(\s+.*)$'
+    replace: '#\1\2\3swap\4'
+    backup: yes
 
-- include_tasks: ubuntu.yml
-  when: ansible_distribution == 'Ubuntu'
+- name: Install zsh
+  vars:
+    package_name:
+      - zsh
+    package_state: latest
+  include_role:
+    name: safe_apt
+  ignore_errors: true
 
-- include_tasks: debian.yml
-  when: ansible_distribution == 'Debian'
+- name: Install git
+  vars: 
+    package_name: 
+      - git
+    package_state: latest
+  include_role: 
+    name: safe_apt
+  ignore_errors: true

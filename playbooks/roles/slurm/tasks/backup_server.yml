@@ -5,7 +5,7 @@
     package_name: '{{ slurm_server_packages }}'
     disable_gpg_check_var: True
   include_role: 
-    name: safe_yum
+    name: safe_apt
   when: ansible_os_family == 'RedHat'
   
 - name: Render systemd units for slurmd and slurmdbd

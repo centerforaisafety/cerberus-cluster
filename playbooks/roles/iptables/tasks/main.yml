@@ -1,5 +1,30 @@
-- include_tasks: el.yml
-  when: ansible_os_family == 'RedHat'
+---
+- name: Setup iptables chains and rules for billing
+  become: true
+  block:
+    - name: Create user-defined chain USER_TRAFFIC
+      iptables:
+        chain: USER_TRAFFIC
+        chain_management: true
 
-- include_tasks: ubuntu.yml
-  when: ansible_distribution == 'Ubuntu'
+    - name: Insert USER_TRAFFIC chain to OUTPUT
+      iptables:
+        chain: OUTPUT
+        jump: USER_TRAFFIC
+        action: insert
+
+    - name: Append rule to USER_TRAFFIC chain
+      iptables:
+        table: filter
+        chain: USER_TRAFFIC
+        destination: 172.16.0.0/21
+        jump: RETURN
+        action: append
+
+    # Save the rules
+    - name: Save iptables rules
+      shell: iptables-save | tee /etc/iptables/rules.v4
+
+    - name: Save ip6tables rules
+      shell: ip6tables-save | tee /etc/iptables/rules.v6
+  when: billing | default(false) | bool

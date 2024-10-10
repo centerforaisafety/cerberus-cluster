@@ -95,8 +95,6 @@
     - include_role: 
         name: nvidia-enroot
       when: enroot|default(true)|bool
-    - include_role:
-        name: tuned
 
 - hosts: controller,slurm_backup,compute,login
   gather_facts: true

@@ -67,7 +67,7 @@
     package_name:
       - mutt
   include_role:
-    name: safe_yum
+    name: safe_apt
     
 - name: Copy Muttrc.local
   copy:

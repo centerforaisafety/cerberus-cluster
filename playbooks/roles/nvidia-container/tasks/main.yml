@@ -1,10 +1,37 @@
---- 
+---
+- name: add key
+  apt_key:
+    url: "{{ libnvidia_container_repo_gpg_url }}"
+    state: present
 
-- include_tasks: oraclelinux-7.yml
-  when: ansible_os_family == 'RedHat' and ansible_distribution == 'OracleLinux' and ansible_distribution_major_version == '7'
+- name: add repo
+  get_url:
+    url: "{{ libnvidia_container_repo_base_url }}/{{ ubuntu_repo_dist_name }}/{{ ubuntu_repo_file_name }}"
+    dest: "{{ ubuntu_repo_file_path }}"
+    mode: 0644
+    owner: root
+    group: root
 
-#- include_tasks: centos-7.yml
-#  when: ansible_os_family == 'RedHat' and ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
 
-- include_tasks: ubuntu.yml
-  when: ansible_distribution == 'Ubuntu'
+- name: install packages
+  vars: 
+    package_name: 
+      - libnvidia-container-tools{{ libnvidia_container_tools_package_version | ternary("="+libnvidia_container_tools_package_version, "") }}
+    package_state: "{{ libnvidia_container_tools_package_state }}"
+    package_cache: true
+  include_role: 
+    name: safe_apt
+
+- name: Install nvidia-container-toolkit
+  vars:
+    package_name:
+      - nvidia-container-toolkit
+    package_state: latest
+    package_cache: true
+  include_role:
+    name: safe_apt
+
+- name: Start Docker
+  ansible.builtin.service:
+    name: "docker"
+    state: restarted

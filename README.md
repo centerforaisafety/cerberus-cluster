@@ -1,54 +1,5 @@
-# Stack to create an HPC cluster.
+# CAIS Compute Cluster
 
-[![Deploy to Oracle Cloud](https://oci-resourcemanager-plugin.plugins.oci.oraclecloud.com/latest/deploy-to-oracle-cloud.svg)](https://cloud.oracle.com/resourcemanager/stacks/create?zipUrl=https://github.com/oracle-quickstart/oci-hpc/archive/refs/heads/master.zip)
-
-## Policies
-
-### Policies to deploy the stack
-
-```text
-allow service compute_management to use tag-namespace in tenancy
-allow service compute_management to manage compute-management-family in tenancy
-allow service compute_management to read app-catalog-listing in tenancy
-allow group user to manage all-resources in compartment compartmentName
-```
-
-### Policies for autoscaling or resizing
-
-As described when you specify your variables, if you select instance-principal as way of authenticating your node, make sure your generate a dynamic group and give the following policies to it:
-
-```text
-Allow dynamic-group instance_principal to read app-catalog-listing in tenancy
-Allow dynamic-group instance_principal to use tag-namespace in tenancy
-```
-
-And also either:
-
-```text
-Allow dynamic-group instance_principal to manage compute-management-family in compartment compartmentName
-Allow dynamic-group instance_principal to manage instance-family in compartment compartmentName
-Allow dynamic-group instance_principal to use virtual-network-family in compartment compartmentName
-Allow dynamic-group instance_principal to use volumes in compartment compartmentName
-```
-
-or:
-
-`Allow dynamic-group instance_principal to manage all-resources in compartment compartmentName`
-
-## Supported OS
-
-The stack allowa various combination of OS. Here is a list of what has been tested. We can't guarantee any of the other combination.
-
-|   Controller  |    Compute   |
-|---------------|--------------|
-|      OL7      |      OL7     |  
-|      OL7      |      OL8     |
-|      OL7      |    CentOS7   |
-|      OL8      |       OL8    |
-|      OL8      |       OL7    |
-| Ubuntu  20.04 | Ubuntu 20.04 |
-
-When switching to Ubuntu, make sure the username is changed from opc to Ubuntu in the ORM for both the controller and compute nodes. 
 ## How is resizing different from autoscaling ?
 Autoscaling is the idea of launching new clusters for jobs in the queue. 
 Resizing a cluster is changing the size of a cluster. In some case growing your cluster may be a better idea, be aware that this may lead to capacity errors. Because Oracle CLoud RDMA is non virtualized, you get much better performance but it also means that we had to build HPC islands and split our capacity across different network blocks.

@@ -1,3 +1,0 @@
-- name: grow boot volume
-  command: bash -c 'sudo /usr/libexec/oci-growfs -y | egrep "NOCHANGE:|CHANGED:"'
-
