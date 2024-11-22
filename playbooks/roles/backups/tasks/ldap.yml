@@ -1,0 +1,36 @@
+---
+- name: Install progressbar
+  become: true
+  shell: "/usr/bin/pip install progressbar2"
+
+- name: Install sssd-tools
+  vars: 
+    package_name: 
+      - sssd-tools
+    package_state: latest
+    package_repo: "epel,ol7_developer_EPEL"
+  include_role: 
+    name: safe_yum
+  ignore_errors: true
+
+- name: Copy scripts
+  become: true
+  copy: 
+    src: '{{ item }}'
+    dest: '/opt/oci-hpc/scripts/{{ item }}'
+    force: no
+    owner: '{{ ansible_user }}'
+    group: '{{ ansible_user }}'
+    mode: 0660
+  with_items:
+    - ldap_restore.py
+    - ldap_backup.py
+
+- name: Create crontab entry to backup ldap
+  cron:
+    name: Backup ldap
+    minute: "0"
+    hour: "0"
+    user: '{{ ansible_user }}'
+    job: "python /opt/oci-hpc/scripts/ldap_backup.py"
+    disabled: true

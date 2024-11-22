@@ -1,0 +1,9 @@
+---
+- name: Ensure log directory for backups exists
+  file:
+    path: "/opt/oci-hpc/logs/backups"
+    state: directory
+    owner: '{{ ansible_user }}'
+    group: '{{ ansible_user }}'
+
+- include_tasks: ldap.yml
