@@ -31,6 +31,7 @@
     - gpu.sh
     - network.sh
     - invoice.sh
+    - invoice_per_user.sh
 
 - name: Create credentials file for MySQL authentication credentials for billing database
   file:
@@ -90,4 +91,11 @@
     name: "Example: Generate invoice for {account_name}"
     user: '{{ ansible_user }}'
     job: "/opt/oci-hpc/billing/invoice.sh --verbose --account \"{account_name}\" | sudo tee /data/{account_name}/invoices/{account_name}_invoices.csv >/dev/null"
+    disabled: true
+
+- name: Create example invoice_per_user cron file under /etc/cron.d
+  cron:
+    name: "Example: Generate invoice_per_user for {account_name}"
+    user: '{{ ansible_user }}'
+    job: "/opt/oci-hpc/billing/invoice_per_user.sh --verbose --account \"{account_name}\" | sudo tee /data/{account_name}/invoices/{account_name}_invoices_per_user.csv >/dev/null"
     disabled: true
