@@ -31,6 +31,26 @@ def exists(key, value):
     except KeyError:
         return False
 
+def ldap_gid_exists(gid):
+    """ Check if GID exists in LDAP """
+    search_base = groups_dn
+    search_filter = '(gidNumber={})'.format(gid)
+    server = ldap3.Server(host, use_ssl=True)
+    with ldap3.Connection(server, bind_dn, bind_pass, auto_bind=True) as conn:
+        conn.search(search_base, search_filter, attributes=['gidNumber'])
+        return len(conn.entries) > 0
+
+def gid_exists(gid):
+    """ Check if GID exists at the system level or in LDAP """
+    # Check at the system level
+    if exists('gid', gid):
+        return True
+
+    # Check on the LDAP server
+    if ldap_gid_exists(gid):
+        return True
+
+    return False
 
 def find_next_gid(): 
   base_gid = 10005
@@ -187,7 +207,7 @@ def add(user, password, uid, gid, name, nossh):
   if(conn.result['result'] != 0): 
     print(conn.result)
 
-  if exists('gid', gid) is False:
+  if gid_exists(gid) is False:
     click.echo('Creating group')
     conn.add("cn={},{}".format(user, groups_dn), ['top', 'groupOfMembers', 'posixgroup'], { 'cn': [user], 'gidNumber': [gid] } )
     if(conn.result['result'] != 0): 
@@ -196,10 +216,11 @@ def add(user, password, uid, gid, name, nossh):
   homedir='/home/{}/'.format(user)
   os.system("sudo su - "+user+" -c "+" 'ls' 2> /dev/null")
 
-  if not nossh:
+  if nossh is False:
     homedir='/data/{}/'.format(user)
-    os.system("sudo su - "+user+" -c "+"' ssh-keygen -t rsa -b 2048 -q -f "+homedir+".ssh/id_rsa -P \"\"' 2> /dev/null")
-    os.system("sudo su - "+user+" -c "+"'mv "+homedir+".ssh/id_rsa.pub "+homedir+".ssh/authorized_keys' 2> /dev/null")
+    if os.path.exists(homedir) is False:
+      os.system("sudo su - "+user+" -c "+"' ssh-keygen -t rsa -b 2048 -q -f "+homedir+".ssh/id_rsa -P \"\"' 2> /dev/null")
+      os.system("sudo su - "+user+" -c "+"'mv "+homedir+".ssh/id_rsa.pub "+homedir+".ssh/authorized_keys' 2> /dev/null")
 
 @user.command()
 @click.argument('user_name')
