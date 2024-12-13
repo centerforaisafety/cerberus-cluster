@@ -7,3 +7,4 @@
     group: '{{ ansible_user }}'
 
 - include_tasks: ldap.yml
+- include_tasks: accounting.yml

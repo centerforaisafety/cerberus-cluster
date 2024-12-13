@@ -1,0 +1,20 @@
+- name: Copy scripts
+  become: true
+  copy: 
+    src: '{{ item }}'
+    dest: '/opt/oci-hpc/scripts/{{ item }}'
+    force: no
+    owner: '{{ ansible_user }}'
+    group: '{{ ansible_user }}'
+    mode: 0770
+  with_items:
+    - accounting_backup.sh
+
+- name: Create crontab entry to backup accounting
+  cron:
+    name: Backup accounting
+    minute: "0"
+    hour: "0"
+    user: '{{ ansible_user }}'
+    job: "/opt/oci-hpc/scripts/accounting_backup.sh"
+    disabled: true
