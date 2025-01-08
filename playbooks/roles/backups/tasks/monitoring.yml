@@ -1,0 +1,39 @@
+---
+- name: Install Victoria Metrics
+  vars: 
+    package_name: 
+      - victoria-metrics
+    package_state: latest
+    package_repo: "epel,ol7_developer_EPEL"
+  include_role: 
+    name: safe_yum
+  ignore_errors: true
+
+# We are using the dockerized version of victoria metrics so disable the systemd version should be disabled
+- name: Disable and stop the Victoria Metrics service
+  become: true
+  systemd:
+    name: victoria-metrics
+    enabled: no
+    state: stopped
+
+- name: Copy scripts
+  become: true
+  copy: 
+    src: '{{ item }}'
+    dest: '/opt/oci-hpc/scripts/{{ item }}'
+    force: no
+    owner: '{{ ansible_user }}'
+    group: '{{ ansible_user }}'
+    mode: 0770
+  with_items:
+    - monitoring_backup.sh
+
+- name: Create crontab entry to backup monitoring
+  cron:
+    name: Backup monitoring
+    minute: "0"
+    hour: "0"
+    user: '{{ ansible_user }}'
+    job: "/opt/oci-hpc/scripts/monitoring_backup.sh"
+    disabled: true
