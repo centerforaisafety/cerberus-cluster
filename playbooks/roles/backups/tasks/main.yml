@@ -8,3 +8,4 @@
 
 - include_tasks: ldap.yml
 - include_tasks: accounting.yml
+- include_tasks: slurm.yml
