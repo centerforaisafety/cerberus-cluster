@@ -67,8 +67,10 @@ UnkillableStepTimeout=120
 
 # Priority/Fairshare section
 PriorityType=priority/multifactor
-# 2 week half-life
-PriorityDecayHalfLife=14-0
+# No decay
+PriorityDecayHalfLife=0
+# Reset usage every month
+PriorityUsageResetPeriod=MONTHLY
 # The larger the job, the greater its job size priority.
 PriorityFavorSmall=no
 
