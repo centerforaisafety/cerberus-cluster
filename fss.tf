@@ -5,13 +5,6 @@ resource "oci_file_storage_file_system" "FSS" {
   display_name        = "${local.cluster_name}-fss"
 }
 
-resource "oci_file_storage_file_system" "FSS_home" {
-  count          = var.create_fss && var.home_fss ? 1 : 0
-  availability_domain         = var.fss_ad
-  compartment_id              = var.fss_compartment
-  display_name                = "${local.cluster_name}-fss-home"  
-  }
-
 resource "oci_file_storage_mount_target" "FSSMountTarget" {
   count               = var.create_fss ? var.mount_target_count : 0
   availability_domain = var.fss_ad

@@ -37,7 +37,7 @@ resource "oci_mysql_mysql_db_system" "billing_mysql_db_system" {
     }
     description = "MySQL DB System for billing"
     display_name = "billing"
-    mysql_version = "8.0.35"
+    mysql_version = "8.0.41"
     port = "3306"
     port_x = "33060"
 

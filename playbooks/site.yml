@@ -84,11 +84,11 @@
           ⠀⠀⠀⠳⣦⡘⠷⡀⠈⠉⢉⣉⢉⣴⠟⠀⠀
           ⠀⠀⠀⠀⠈⠛⠷⢶⣤⡶⠟⠡⠚⠁⠀⠀⠀
 
-          Welcome to the Center for AI Safety Compute Cluster!
+          Welcome to the CAIS Compute Cluster!
 
           We've set the default allocated storage per user to be 500 GB.
 
-          The compute cluster is exclusively designated for work on pre-approved safety projects. Do not use it for any unapproved projects. Feel free to reach out on slack for any questions and have fun!
+          Feel free to reach out on slack for any questions and have fun!
         dest: /etc/motd
         mode: '0644'
 
