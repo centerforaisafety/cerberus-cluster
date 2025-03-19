@@ -64,4 +64,7 @@ if [ "$add_billing" = true ]; then
     mysql --defaults-extra-file=/home/ubuntu/.billing.cnf -e "INSERT INTO billing.users (user_id, account_id, user_name) VALUES ($user_id, $group_id, '$cluster_username');" 
 fi
 
+# Update iptables rules for egress tracking
+ansible-playbook /opt/oci-hpc/playbooks/sync_iptables_for_usage_tracking.yml
+
 echo "Onboarding process completed for $cluster_username."
