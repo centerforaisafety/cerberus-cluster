@@ -27,7 +27,6 @@ set -u
 
 # Global variables
 # Gather list of hosts from Slurm
-readonly HOSTS=$(sudo sinfo -S "%n" -o "%n" | tail -n +2)
 readonly TABLE='usage_records'
 readonly START_TIME=$(date -d "-1 hour" +"%Y-%m-%d %H:00:00")
 readonly END_TIME=$(date -d "-1 hour" +"%Y-%m-%d %H:59:59")
@@ -146,7 +145,7 @@ get_network_usage_per_user() {
     return 1
   fi
 
-  local iptable_cmd='sudo iptables -L USER_TRAFFIC -v -x -n | awk '\''NR>3 {print $2, $13}'\'' && sudo iptables -Z USER_TRAFFIC'
+  local iptable_cmd='sudo iptables -L USER_TRAFFIC -v -x -n | awk '\''NR>3 && /MARK set/ {print $2, $13}'\'' && sudo iptables -Z USER_TRAFFIC'
   local result
   result=$(ssh "$host" "$iptable_cmd")
  
@@ -216,7 +215,7 @@ process_network_usage() {
     fi
 
     # Update total usage
-    TOTAL_NETWORK_USAGE_PER_USER[$user_id]=$((TOTAL_NETWORK_USAGE_PER_USER[$user_id] + bytes))
+    TOTAL_NETWORK_USAGE_PER_USER[$user_id]=$(( ${TOTAL_NETWORK_USAGE_PER_USER[$user_id]:-0} + bytes ))
     log_message "Updated user $user_id with $bytes bytes."
   done <<< "$usage_data"
 
