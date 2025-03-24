@@ -1,4 +1,0 @@
----
-nix_version: 2.20.4
-installer_checksum: sha256:5e6ad6b2129c6906a40cc49252fe252fbfb5612fea3c614af17cb194ba600c08
-flakes: false
