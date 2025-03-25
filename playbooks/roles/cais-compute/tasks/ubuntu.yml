@@ -38,15 +38,6 @@
     name: safe_yum
   ignore_errors: true
 
-- name: Install git-lfs
-  vars:
-    package_name:
-      - git-lfs
-    package_state: latest
-  include_role:
-    name: safe_yum
-  ignore_errors: true
-
 - name: Install openGL/Mesa
   vars:
     package_name:
@@ -65,6 +56,29 @@
   vars:
     package_name:
       - libaio-dev
+    package_state: latest
+  include_role:
+    name: safe_yum
+  ignore_errors: true
+
+- name: Install Playwrite deps
+  vars:
+    package_name:
+      - libgtk-4-1
+      - libgraphene-1.0-0
+      - libvpx7
+      - libopus0
+      - libgstreamer-plugins-base1.0-0
+      - gstreamer1.0-plugins-base
+      - flite
+      - libavif13
+      - libharfbuzz-icu0
+      - libenchant-2-2
+      - libsecret-1-0
+      - libhyphen0
+      - libmanette-0.2-0
+      - libgstreamer-gl1.0-0
+      - gstreamer1.0-plugins-bad
     package_state: latest
   include_role:
     name: safe_yum
