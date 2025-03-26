@@ -3,6 +3,7 @@
   vars:
     package_name:
       - tmux
+      - mosh
     package_state: latest
   include_role:
     name: safe_yum
