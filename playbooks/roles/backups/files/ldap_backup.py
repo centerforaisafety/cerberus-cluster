@@ -96,7 +96,8 @@ def main():
     """Main function to run commands, parse output, compress, and upload the backup."""
     # Generate a timestamp for the backup file
     timestamp = datetime.now().strftime('%Y_%m_%d')
-    output_file = f'/tmp/ldap_backup_{timestamp}.json'
+    output_file_name = f'ldap_backup_{timestamp}.json'
+    output_file = f'/tmp/{output_file_name}'
     compressed_file = f'{output_file}.gz'
     
     logging.info("Starting LDAP backup process.")
@@ -140,7 +141,7 @@ def main():
     # Upload the compressed file to Object Storage
     try:
         bucket_name = 'backups'
-        oci_command = f'oci os object put --bucket-name {bucket_name} --file {compressed_file}'
+        oci_command = f"oci os object put --force --bucket-name {bucket_name} --name '/ldap/{output_file_name}.gz' --file {compressed_file}"
         subprocess.run(oci_command, shell=True, check=True)
     except subprocess.CalledProcessError as e:
         logging.error(f"Upload failed: {e}")
