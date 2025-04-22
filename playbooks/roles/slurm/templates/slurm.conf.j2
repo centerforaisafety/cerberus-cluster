@@ -36,7 +36,7 @@ Waittime=0
 GresTypes=gpu
 SchedulerType=sched/backfill
 SelectType=select/cons_tres
-SelectTypeParameters=CR_Core
+SelectTypeParameters=CR_Core_Memory
 AccountingStorageHost={{ controller[0] }}
 AccountingStorageType=accounting_storage/slurmdbd
 AccountingStoreFlags=job_comment
@@ -109,7 +109,8 @@ NodeName={{ hostvars[groups['login'][0]]['ansible_fqdn'].split('.')[0] }}
 
 {% for partition in queues %}
 {% for instance in partition.instance_types %}
-Nodeset={{instance.name}} Feature={{instance.name}}
+Nodeset=cais Feature=cais # NodeSet for CAIS nodes
+NodeSet=schmidt_sciences Feature=schmidt_sciences # NodeSet for Schmidt Sciences nodes
 {% endfor %}
 {% endfor %}
 
@@ -119,7 +120,8 @@ Nodeset={{instance.name}} Feature={{instance.name}}
 {% for instance in partition.instance_types %}
 {{ nodesList.append(instance.name)}}
 {%- endfor %}
-PartitionName={{partition.name}} Nodes={{nodesList|join(',')}} Default=YES DefaultTime=02:00:00 MaxTime=2-0 State=UP PriorityTier=1 PreemptMode=OFF
+PartitionName=cais Nodes=cais DefaultTime=02:00:00 MaxTime=2-0 State=UP PriorityTier=1 PreemptMode=OFF    # CAIS partition (5 nodes)
+PartitionName=schmidt_sciences Nodes=schmidt_sciences DefaultTime=02:00:00 MaxTime=2-0 State=UP PriorityTier=1 PreemptMode=OFF  # Schmidt Sciences partition (5 nodes)
 {% else %}
 {% set nodesList = [] %}
 {% for instance in partition.instance_types %}
