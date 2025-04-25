@@ -83,3 +83,30 @@
   include_role:
     name: safe_yum
   ignore_errors: true
+
+# Apptainer installation tasks
+- name: Add Apptainer PPA signing key
+  become: true
+  apt_key:
+    keyserver: keyserver.ubuntu.com
+    id: AFE36534FC6218AE    # “Launchpad PPA for Apptainer”
+    state: present
+    keyring: /etc/apt/trusted.gpg.d/apptainer-archive-keyring.gpg
+
+- name: Add Apptainer repository
+  become: true
+  apt_repository:
+    repo: "ppa:apptainer/ppa"
+    state: present
+    filename: "apptainer"
+
+- name: Update apt cache
+  become: true
+  apt:
+    update_cache: yes
+
+- name: Install Apptainer package
+  become: true
+  apt:
+    name: apptainer
+    state: present
