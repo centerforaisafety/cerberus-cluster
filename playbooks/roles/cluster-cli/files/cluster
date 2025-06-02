@@ -218,7 +218,7 @@ def add(user, password, uid, gid, name, nossh):
 
   if nossh is False:
     homedir='/data/{}/'.format(user)
-    if os.path.exists(homedir) is False:
+    if os.path.exists(homedir + ".ssh") is False:
       os.system("sudo su - "+user+" -c "+"' ssh-keygen -t rsa -b 2048 -q -f "+homedir+".ssh/id_rsa -P \"\"' 2> /dev/null")
       os.system("sudo su - "+user+" -c "+"'mv "+homedir+".ssh/id_rsa.pub "+homedir+".ssh/authorized_keys' 2> /dev/null")
 
