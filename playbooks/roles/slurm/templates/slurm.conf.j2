@@ -111,6 +111,7 @@ NodeName={{ hostvars[groups['login'][0]]['ansible_fqdn'].split('.')[0] }}
 {% for instance in partition.instance_types %}
 Nodeset=cais Feature=cais # NodeSet for CAIS nodes
 NodeSet=schmidt_sciences Feature=schmidt_sciences # NodeSet for Schmidt Sciences nodes
+NodeSet=tamper_resistance Feature=tamper_resistance # NodeSet for Tamper Resistance nodes
 {% endfor %}
 {% endfor %}
 
@@ -120,8 +121,17 @@ NodeSet=schmidt_sciences Feature=schmidt_sciences # NodeSet for Schmidt Sciences
 {% for instance in partition.instance_types %}
 {{ nodesList.append(instance.name)}}
 {%- endfor %}
-PartitionName=cais Nodes=cais DefaultTime=02:00:00 MaxTime=2-0 State=UP PriorityTier=1 PreemptMode=OFF    # CAIS partition (5 nodes)
-PartitionName=schmidt_sciences Nodes=schmidt_sciences DefaultTime=02:00:00 MaxTime=2-0 State=UP PriorityTier=1 PreemptMode=OFF  # Schmidt Sciences partition (5 nodes)
+# CAIS partition
+PartitionName=cais_cpu Nodes=cais DefaultTime=02:00:00 MaxTime=2-0 State=UP PriorityTier=3 PreemptMode=OFF #AllowGroups=cais,spar,ubuntu QOS=cpuonly
+PartitionName=cais Nodes=cais DefaultTime=02:00:00 MaxTime=2-0 State=UP PriorityTier=2 PreemptMode=OFF 
+
+# Schmidt Sciences partition
+PartitionName=schmidt_sciences_cpu Nodes=schmidt_sciences DefaultTime=02:00:00 MaxTime=2-0 State=UP PriorityTier=2 PreemptMode=OFF #DenyAccounts=cais,spar QOS=cpuonly
+PartitionName=schmidt_sciences Nodes=schmidt_sciences DefaultTime=02:00:00 MaxTime=2-0 State=UP PriorityTier=1 PreemptMode=OFF  
+
+# Tamper Resistance partition
+PartitionName=tamper_resistance_cpu Nodes=tamper_resistance DefaultTime=02:00:00 MaxTime=2-0 State=UP PriorityTier=3 PreemptMode=OFF #DenyAccounts=cais,spar,schmidt_sciences QOS=cpuonly
+PartitionName=tamper_resistance Nodes=tamper_resistance DefaultTime=02:00:00 MaxTime=2-0 State=UP PriorityTier=1 PreemptMode=OFF  
 {% else %}
 {% set nodesList = [] %}
 {% for instance in partition.instance_types %}
