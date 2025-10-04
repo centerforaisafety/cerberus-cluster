@@ -9,6 +9,9 @@ resource "oci_core_instance_configuration" "instance_pool_configuration" {
     launch_details {
       availability_domain = var.ad
       compartment_id      = var.targetCompartment
+      create_vnic_details {
+        assign_public_ip = false
+      }
       display_name = local.cluster_name
       freeform_tags = {
         "cluster_name"   = local.cluster_name
