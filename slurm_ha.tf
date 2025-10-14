@@ -205,15 +205,12 @@ resource "null_resource" "cluster_backup" {
       home_nfs                  = var.home_nfs,
       create_fss                = var.create_fss,
       home_fss                  = var.home_fss,
-<<<<<<< HEAD
       mount_target_count        = var.mount_target_count,
       nfs_list_of_mount_target_IPs = local.nfs_list_of_mount_target_IPs,
       manual_multiple_mount_target = var.manual_multiple_mount_target,
-=======
       create_home_fss           = var.create_home_fss,
       home_fss_source_IP        = local.home_fss_source_IP,
       home_fss_source_path      = var.home_fss_source_path,
->>>>>>> 812791c (Rebasing to 763d350.)
       scratch_nfs               = var.use_scratch_nfs && var.node_count > 0,
       cluster_nfs               = var.use_cluster_nfs,
       cluster_nfs_path          = var.cluster_nfs_path,
@@ -404,15 +401,12 @@ resource "null_resource" "cluster_backup" {
       home_nfs                            = var.home_nfs,
       create_fss                          = var.create_fss,
       home_fss                            = var.home_fss,
-<<<<<<< HEAD
       mount_target_count                  = var.mount_target_count,
       nfs_list_of_mount_target_IPs        = local.nfs_list_of_mount_target_IPs,
       manual_multiple_mount_target        = var.manual_multiple_mount_target,
-=======
       create_home_fss                     = var.create_home_fss,
       home_fss_source_IP                  = local.home_fss_source_IP,
       home_fss_source_path                = var.home_fss_source_path,
->>>>>>> 812791c (Rebasing to 763d350.)
       add_nfs                             = var.add_nfs,
       nfs_target_path                     = var.nfs_target_path,
       nfs_source_IP                       = local.nfs_source_IP,

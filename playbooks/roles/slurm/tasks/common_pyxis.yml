@@ -1,10 +1,6 @@
 ---
-<<<<<<< HEAD
-- set_fact: 
-=======
 - name: set /etc/enroot as enroot path if no nvme drive
   set_fact: 
->>>>>>> 812791c (Rebasing to 763d350.)
     enroot_top_path_checked: "/etc/enroot/"
   when: " not 'nvme0n1' in hostvars[inventory_hostname].ansible_devices"
 
@@ -63,10 +59,7 @@
   args:
     chdir: /tmp/pyxis/
   ignore_errors: true
-<<<<<<< HEAD
-=======
   when: not ansible_check_mode
->>>>>>> 812791c (Rebasing to 763d350.)
 
 - name: create plugstack.conf
   become: true

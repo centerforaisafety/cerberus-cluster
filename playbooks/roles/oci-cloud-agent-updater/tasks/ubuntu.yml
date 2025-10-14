@@ -16,7 +16,6 @@
     replace: 'upgrade_interval: -1'
   when: updater_exist.stat.exists
 
-
 - name: Restart cloud agent updater
   service: 
     name: snap.oracle-cloud-agent.oracle-cloud-agent-updater.service
@@ -25,11 +24,7 @@
   register: restart_cloud_agent_updater
   until: restart_cloud_agent_updater is not failed
   when: updater_exist.stat.exists
-<<<<<<< HEAD
-  ignore_errors: yes
-=======
   ignore_errors: true
->>>>>>> 812791c (Rebasing to 763d350.)
 
 # oracle-cloud-agent runs by default on ubuntu 
 # However it doesn't have osms (OS Management Service) which we had to disable on Oracle Linux

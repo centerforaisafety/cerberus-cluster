@@ -32,15 +32,12 @@ scratch_nfs = ${scratch_nfs}
 home_nfs = ${home_nfs} 
 create_fss = ${create_fss} 
 home_fss = ${home_fss} 
-<<<<<<< HEAD
 mount_target_count = ${mount_target_count}
 nfs_list_of_mount_target_IPs = ${nfs_list_of_mount_target_IPs}
 manual_multiple_mount_target = ${manual_multiple_mount_target}
-=======
 create_home_fss = ${create_home_fss}
 home_fss_source_IP = ${home_fss_source_IP}
 home_fss_source_path = ${home_fss_source_path}
->>>>>>> 812791c (Rebasing to 763d350.)
 cluster_nfs = ${cluster_nfs}
 cluster_nfs_path = ${cluster_nfs_path}
 slurm_nfs_path = ${slurm_nfs_path}

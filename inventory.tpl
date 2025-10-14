@@ -27,17 +27,13 @@ nvme_path=/mnt/localdisk/
 scratch_nfs = ${scratch_nfs}
 home_nfs = ${home_nfs} 
 create_fss = ${create_fss} 
-<<<<<<< HEAD
-home_fss = ${home_fss} 
 mount_target_count = ${mount_target_count}
 nfs_list_of_mount_target_IPs = ${nfs_list_of_mount_target_IPs}
 manual_multiple_mount_target = ${manual_multiple_mount_target}
-=======
 home_fss = ${home_fss}
 create_home_fss = ${create_home_fss}
 home_fss_source_IP = ${home_fss_source_IP}
 home_fss_source_path = ${home_fss_source_path}
->>>>>>> 812791c (Rebasing to 763d350.)
 cluster_nfs = ${cluster_nfs}
 cluster_nfs_path = ${cluster_nfs_path}
 slurm_nfs_path = ${slurm_nfs_path}
@@ -95,16 +91,13 @@ vcn_compartment=${vcn_compartment}
 healthchecks=${healthchecks}
 change_hostname=${change_hostname}
 hostname_convention=${hostname_convention}
-<<<<<<< HEAD
 ons_topic_ocid=${ons_topic_ocid}
 add_lfs=${add_lfs}
 lfs_target_path=${lfs_target_path}
 lfs_source_IP=${lfs_source_IP}
 lfs_source_path=${lfs_source_path}
 lfs_options=${lfs_options}
-=======
 billing=${billing}
 billing_mysql_db_admin_username=${billing_mysql_db_admin_username}
 billing_mysql_db_admin_password=${billing_mysql_db_admin_password}
 billing_mysql_ip=${billing_mysql_ip}
->>>>>>> 812791c (Rebasing to 763d350.)

@@ -227,12 +227,8 @@ def edit(user, password, uid, gid, name, shell):
               confirmation_prompt=True)
 @click.option('-n', '--name', prompt='Full Name', required=True)
 @click.option('-i', '--uid', default=None, help='Select the userID')
-<<<<<<< HEAD
 @click.option('-g', '--gid', default="9876", help='Add to this groupID')
 @click.option('-shell', '--shell', default="/bin/bash", help='Use as default shell, ex /bin/bash')
-=======
-@click.option('-g', '--gid', default=None, help='Add to this groupID')
->>>>>>> 812791c (Rebasing to 763d350.)
 @click.option('-nossh', '--nossh', is_flag=True, default=False, help='Flag to not generate a user-specific ssh-key pair for passwordless ssh.')
 def add(user, password, uid, gid, name, nossh, shell):
   """ add user """
@@ -244,11 +240,7 @@ def add(user, password, uid, gid, name, nossh, shell):
 
   server = ldap3.Server(host, use_ssl=True)
   with ldap3.Connection(server, bind_dn, bind_pass, auto_bind=True) as conn:
-<<<<<<< HEAD
     conn.add("cn={},{}".format(user, search_base), ['inetOrgPerson', 'posixAccount', 'top', 'shadowAccount'], { 'sn': user, 'uid': user, 'uidNumber': uid, 'gidNumber': gid, 'userPassword': password, 'gecos': name, 'homeDirectory': '/home/{}'.format(user), 'displayName': name, 'loginShell': shell } )
-=======
-    conn.add("cn={},{}".format(user, search_base), ['inetOrgPerson', 'posixAccount', 'top', 'shadowAccount'], { 'sn': user, 'uid': user, 'uidNumber': uid, 'gidNumber': gid, 'userPassword': password, 'gecos': name, 'homeDirectory': '/data/{}'.format(user), 'displayName': name, 'loginShell': '/bin/bash' } )
->>>>>>> 812791c (Rebasing to 763d350.)
   if(conn.result['result'] != 0): 
     print(conn.result)
 

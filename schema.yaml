@@ -171,13 +171,10 @@ variableGroups:
       - ${use_advanced}
       - ${home_nfs}
       - ${home_fss}
-<<<<<<< HEAD
       - ${compute_node_ssh_key}
-=======
       - ${create_home_fss}
       - ${home_fss_source_IP}
       - ${home_fss_source_path}
->>>>>>> 812791c (Rebasing to 763d350.)
       - ${use_cluster_nfs}
       - ${cluster_nfs_path}
       - ${controller_block}
@@ -2060,7 +2057,6 @@ variables:
         - ${use_marketplace_image_monitoring}
         - ${monitoring_node}
 
-<<<<<<< HEAD
   add_lfs:
     type: boolean
     title: "Include Existing Lustre Filesystem"
@@ -2170,7 +2166,6 @@ variables:
       and:
         - ${add_lfs}
 
-=======
   old_marketplace_listing_login:
     type: enum
     title: "Image version"
@@ -2219,4 +2214,3 @@ variables:
     description: "" 
     required: true
     visible: ${billing}
->>>>>>> 812791c (Rebasing to 763d350.)
