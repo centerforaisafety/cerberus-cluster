@@ -355,9 +355,6 @@
       when: autoscaling_monitoring|default(false)|bool
     - include_role: 
         name: cron
-    # - include_role:
-    #     name: billing
-    #   when: billing|default(false)|bool
 
 - hosts: controller
   tasks:
@@ -441,37 +438,9 @@
 
 - hosts: all
   become: true
-  # vars: 
-  #   destroy: false
-  #   initial: true
   gather_facts: true
   roles: 
     - iptables
-
-  #   - hosts: all
-  # become: true
-  # vars: 
-  #   destroy: false
-  #   initial: true
-  # gather_facts: true
-  # roles: 
-  #   - oci-cloud-agent
-  #   - privilege_group
-  #   - oci-legacy
-  #   - packages
-  #   - firewall 
-  #   - oci-hostname
-  #   - ssh
-  #   - limits
-  #   - mpi-hostfiles
-  #   - etc-hosts
-  #   - boot-volume
-  #   - mpivars
-  #   - oom-adjust
-  #   - iptables
-
-
-# put billing and iptables roles here.
 
 - hosts: controller,login
   tasks:
