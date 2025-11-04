@@ -158,3 +158,10 @@
     hour: "0"
     user: '{{ ansible_user }}'
     job: "/opt/oci-hpc/scripts/monitoring_backup.sh"
+
+- name: Backup current crontab daily to prevent accidental deletion with crontab -d
+  cron:
+    name: Backup crontab entries
+    special_time: daily
+    user: '{{ ansible_user }}'
+    job: '[ -s <(crontab -l 2>/dev/null) ] && crontab -l > "$HOME/crontab_backup_$(date +\\%Y\\%m\\%d).txt"'
