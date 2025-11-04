@@ -82,3 +82,79 @@
     user: '{{ ansible_user }}'
     job: "#/opt/oci-hpc/monitoring/monitor_oci.sh >> /opt/oci-hpc/monitoring/monitor_oci_`date '+\\%Y\\%m\\%d'`.log 2>&1"
   when: not autoscaling_monitoring | bool
+
+# Billing Collection Cron Jobs
+
+- name: Collect filesystem usage for billing
+  cron:
+    name: Collect filesystem usage for billing
+    minute: "0"
+    hour: "*"
+    user: '{{ ansible_user }}'
+    job: "/opt/oci-hpc/billing/filesystem.sh"
+
+- name: Collect GPU usage for billing
+  cron:
+    name: Collect gpu usage for billing
+    minute: "0"
+    hour: "0"
+    user: '{{ ansible_user }}'
+    job: "/opt/oci-hpc/billing/gpu.sh"
+
+- name: Collect network egress usage for billing
+  cron:
+    name: network egress usage for billing
+    minute: "0"
+    hour: "*"
+    user: '{{ ansible_user }}'
+    job: "/opt/oci-hpc/billing/network.sh"
+
+#  Commented out invoice jobs 
+
+- name: Generate invoice for {account_name}
+  cron:
+    name: Generate invoice for {account_name}
+    minute: "#*"
+    user: '{{ ansible_user }}'
+    job: "#/opt/oci-hpc/billing/invoice.sh --verbose --account \"{account_name}\" | sudo tee /data/{account_name}/invoices/{account_name}_invoices.csv >/dev/null"
+
+- name: Generate invoice_per_user for {account_name}
+  cron:
+    name: Generate invoice_per_user for {account_name}
+    minute: "#*"
+    user: '{{ ansible_user }}'
+    job: "#/opt/oci-hpc/billing/invoice_per_user.sh --verbose --account \"{account_name}\" | sudo tee /data/{account_name}/invoices/{account_name}_invoices_per_user.csv >/dev/null"
+
+# Backup Jobs
+
+- name: Backup ldap
+  cron:
+    name: Backup ldap
+    minute: "0"
+    hour: "0"
+    user: '{{ ansible_user }}'
+    job: "python /opt/oci-hpc/scripts/ldap_backup.py"
+
+- name: Backup accounting
+  cron:
+    name: Backup accounting
+    minute: "0"
+    hour: "0"
+    user: '{{ ansible_user }}'
+    job: "/opt/oci-hpc/scripts/accounting_backup.sh"
+
+- name: Backup Slurm
+  cron:
+    name: Backup Slurm
+    minute: "0"
+    hour: "0"
+    user: '{{ ansible_user }}'
+    job: "/opt/oci-hpc/scripts/slurm_backup.sh"
+
+- name: Backup monitoring
+  cron:
+    name: Backup monitoring
+    minute: "0"
+    hour: "0"
+    user: '{{ ansible_user }}'
+    job: "/opt/oci-hpc/scripts/monitoring_backup.sh"
