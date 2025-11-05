@@ -384,6 +384,24 @@
         name: fix_ldap
       when: ldap|default(true)|bool
 
+
+- hosts: compute
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Wait until LDAP users are visible
+      shell: getent passwd | awk -F: '$3 >= 10000 {exit 0} END {exit 1}'
+      register: ldap_ready
+      retries: 10
+      delay: 5
+      until: ldap_ready.rc == 0
+      changed_when: false
+      ignore_errors: no
+
+    - name: Apply iptables per-user tagging rules
+      include_role:
+        name: iptables
+
 - hosts: all
   vars:
     destroy: false
@@ -437,12 +455,6 @@
     - include_role:
         name: billing
       when: billing|default(false)|bool
-
-- hosts: all
-  become: true
-  gather_facts: true
-  roles: 
-    - iptables
 
 - hosts: controller,login
   tasks:
