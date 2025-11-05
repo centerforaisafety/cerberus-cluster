@@ -431,6 +431,9 @@
   tasks:
     - include_role:
         name: cais-all
+
+- hosts: controller
+  tasks:
     - include_role:
         name: billing
       when: billing|default(false)|bool
