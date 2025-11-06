@@ -1,6 +1,5 @@
 #!/bin/bash
 # Run the iptable commands if and only if apt get exists and user traffic does not exist
-# remove sudo
 
 echo "Turning off the Firewall..."
 sudo iptables -S USER_TRAFFIC >/dev/null 2>&1
@@ -13,7 +12,6 @@ if  [ $? -eq 0 ]; then
     
     # Case 1a: apt get exists and iptable does not exist
     if [ "$iptable_exists" -ne 0 ]; then
-        echo "iptable doesn't exist and apt get exist"
         echo "" > /etc/iptables/rules.v4
         echo "" > /etc/iptables/rules.v6
         iptables -F
@@ -29,7 +27,6 @@ if  [ $? -eq 0 ]; then
 
 # Case 2: apt get does not exist
 else
-    echo "apt get does not exist"
-    # service firewalld stop
-    # chkconfig firewalld off
+    service firewalld stop
+    chkconfig firewalld off
 fi
