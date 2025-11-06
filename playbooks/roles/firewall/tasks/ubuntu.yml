@@ -1,5 +1,4 @@
 ---
-
 - name: disable ufw
   service: 
     name: ufw
