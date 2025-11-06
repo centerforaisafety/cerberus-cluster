@@ -389,26 +389,6 @@
         name: fix_ldap
       when: ldap|default(true)|bool
 
-- hosts: compute
-  become: true
-  gather_facts: false
-  pre_tasks:
-    - name: Check if iptables chain exists
-      command: iptables -S USER_TRAFFIC
-      register: user_traffic_on
-      changed_when: false
-      failed_when: false
-    # Not deleting bc it's useful for debugging to track the logic
-    # - name: Debug iptables chain rc
-    #   debug:
-    #     msg: "USER_TRAFFIC rc={{ user_traffic_on.rc }}"
-  tasks:
-    - name: Apply iptables per-user tagging rules
-      include_role:
-        name: iptables
-      # skip if iptables/nft already reports USER_TRAFFIC present (nftables syntax smh)
-      when: (user_traffic_on.rc | default(1) | int) != 0
-
 - hosts: all
   vars:
     destroy: false
@@ -452,6 +432,28 @@
         lock: "none"
       when: add_lfs|default(false)|bool
       
+
+- hosts: login, compute
+  become: true
+  gather_facts: false
+  pre_tasks:
+    - name: Check if iptables chain exists
+      command: iptables -S USER_TRAFFIC
+      register: user_traffic_on
+      changed_when: false
+      failed_when: false
+    # Not deleting bc it's useful for debugging to track the logic
+    # - name: Debug iptables chain rc
+    #   debug:
+    #     msg: "USER_TRAFFIC rc={{ user_traffic_on.rc }}"
+  tasks:
+    - name: Apply iptables per-user tagging rules
+      include_role:
+        name: iptables
+      # skip if iptables/nft already reports USER_TRAFFIC present (nftables syntax smh)
+      # skip if user_traffic rc exits with 0, which is a success and it exists. When other sign, reconfigure
+      when: (user_traffic_on.rc | default(1) | int) != 0
+
 - hosts: all
   tasks:
     - include_role:
