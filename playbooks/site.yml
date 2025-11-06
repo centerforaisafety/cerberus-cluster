@@ -30,12 +30,17 @@
     destroy: false
     initial: true
   gather_facts: true
+  pre_tasks:
+    - name: Determine if firewall reset requested
+      set_fact:
+        firewall_reset_flag: firewall_reset | default(false) | bool
   roles: 
     - oci-cloud-agent
     - privilege_group
     - oci-legacy
     - packages
-    - firewall 
+    - role: firewall
+      when: firewall_reset_flag | bool
     - oci-hostname
     - ssh
     - limits
@@ -384,23 +389,25 @@
         name: fix_ldap
       when: ldap|default(true)|bool
 
-
 - hosts: compute
   become: true
   gather_facts: false
-  tasks:
-    - name: Wait until LDAP users are visible
-      shell: getent passwd | awk -F: '$3 >= 10000 {exit 0} END {exit 1}'
-      register: ldap_ready
-      retries: 10
-      delay: 5
-      until: ldap_ready.rc == 0
+  pre_tasks:
+    - name: Check if iptables chain exists
+      command: iptables -S USER_TRAFFIC
+      register: user_traffic_on
       changed_when: false
-      ignore_errors: no
-
+      failed_when: false
+    # Not deleting bc it's useful for debugging to track the logic
+    # - name: Debug iptables chain rc
+    #   debug:
+    #     msg: "USER_TRAFFIC rc={{ user_traffic_on.rc }}"
+  tasks:
     - name: Apply iptables per-user tagging rules
       include_role:
         name: iptables
+      # skip if iptables/nft already reports USER_TRAFFIC present (nftables syntax smh)
+      when: (user_traffic_on.rc | default(1) | int) != 0
 
 - hosts: all
   vars:

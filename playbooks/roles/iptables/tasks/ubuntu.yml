@@ -27,4 +27,3 @@
 
     - name: Save ip6tables rules
       shell: ip6tables-save | tee /etc/iptables/rules.v6
-  when: billing | default(false) | bool
