@@ -1,5 +1,4 @@
 ---
-
 - name: disable ufw
   service: 
     name: ufw
@@ -19,4 +18,3 @@
 
 - name: execute off-iptables.sh
   command: "sudo /tmp/off-iptables.sh"
-
