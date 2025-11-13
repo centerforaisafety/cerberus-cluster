@@ -176,3 +176,9 @@
     job: '[ -s <(crontab -l 2>/dev/null) ] && crontab -l > "$HOME/crontab_backup_$(date +\\%Y\\%m\\%d).txt"'
   when: autoscaling | bool
 
+- name: Create an idle-job reaper cron job under /etc/cron.d
+  cron:
+    name: idle job reaper
+    minute: "*/5"
+    user: "{{ ansible_user }}"
+    job: "/usr/bin/python3 /opt/oci-hpc/scripts/idle-job-reaper.py >> /opt/oci-hpc/logs/idle-job-reaper_$(date +\\%Y\\%m\\%d).log 2>&1"
