@@ -13,7 +13,7 @@
 - name: Ensure slurmctld logrotate config is present on controllers
   become: true
   template:
-    src: slurmctld-logrotate.j2
+    src: slurmctld-logrotate
     dest: /etc/logrotate.d/slurmctld
     owner: root
     group: root
@@ -23,7 +23,7 @@
 - name: Ensure slurmdbd logrotate config is present on controllers
   become: true
   template:
-    src: slurmdbd-logrotate.j2
+    src: slurmdbd-logrotate
     dest: /etc/logrotate.d/slurmdbd
     owner: root
     group: root
@@ -33,7 +33,7 @@
 - name: Ensure slurmd logrotate config is present on login nodes
   become: true
   template:
-    src: roles/cais-compute/templates/slurmd-logrotate.j2
+    src: roles/cais-compute/templates/slurmd-logrotate
     dest: /etc/logrotate.d/slurmd
     owner: root
     group: root

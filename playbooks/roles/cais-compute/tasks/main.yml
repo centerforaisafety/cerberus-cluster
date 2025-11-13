@@ -13,7 +13,7 @@
 - name: Ensure slurmd logrotate config is present on compute nodes
   become: true
   template:
-    src: slurmd-logrotate.j2
+    src: slurmd-logrotate
     dest: /etc/logrotate.d/slurmd
     owner: root
     group: root
