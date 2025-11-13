@@ -9,3 +9,12 @@
 
 - include_tasks: debian.yml
   when: ansible_distribution == 'Debian'
+
+- name: Ensure slurmd logrotate config is present
+  become: true
+  template:
+    src: slurmd-logrotate.j2
+    dest: /etc/logrotate.d/slurmd
+    owner: root
+    group: root
+    mode: '0644'
