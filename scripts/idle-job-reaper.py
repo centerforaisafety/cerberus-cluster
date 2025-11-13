@@ -210,4 +210,4 @@ def main():
     reaper.run(reap_enabled)
 
 if __name__ == "__main__":
-    main():
+    main()
