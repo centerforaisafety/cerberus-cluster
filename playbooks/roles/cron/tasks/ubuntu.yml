@@ -92,6 +92,7 @@
     hour: "*"
     user: '{{ ansible_user }}'
     job: "/opt/oci-hpc/billing/filesystem.sh"
+  when: autoscaling | bool 
 
 - name: Collect GPU usage for billing
   cron:
@@ -100,6 +101,7 @@
     hour: "0"
     user: '{{ ansible_user }}'
     job: "/opt/oci-hpc/billing/gpu.sh"
+  when: autoscaling | bool
 
 - name: Collect network egress usage for billing
   cron:
@@ -108,22 +110,25 @@
     hour: "*"
     user: '{{ ansible_user }}'
     job: "/opt/oci-hpc/billing/network.sh"
+  when: autoscaling | bool
 
 #  Commented out invoice jobs 
 
-- name: Generate invoice for {account_name}
-  cron:
-    name: Generate invoice for {account_name}
-    minute: "#*"
-    user: '{{ ansible_user }}'
-    job: "#/opt/oci-hpc/billing/invoice.sh --verbose --account \"{account_name}\" | sudo tee /data/{account_name}/invoices/{account_name}_invoices.csv >/dev/null"
+    #- name: Generate invoice for {account_name}
+    #cron:
+    #name: Generate invoice for {account_name}
+    #minute: "#*"
+    #user: '{{ ansible_user }}'
+    #job: "#/opt/oci-hpc/billing/invoice.sh --verbose --account \"{account_name}\" | sudo tee /data/{account_name}/invoices/{account_name}_invoices.csv >/dev/null"
+    #when: autoscaling | bool
 
-- name: Generate invoice_per_user for {account_name}
-  cron:
-    name: Generate invoice_per_user for {account_name}
-    minute: "#*"
-    user: '{{ ansible_user }}'
-    job: "#/opt/oci-hpc/billing/invoice_per_user.sh --verbose --account \"{account_name}\" | sudo tee /data/{account_name}/invoices/{account_name}_invoices_per_user.csv >/dev/null"
+    #- name: Generate invoice_per_user for {account_name}
+    #cron:
+    #name: Generate invoice_per_user for {account_name}
+    #minute: "#*"
+    #user: '{{ ansible_user }}'
+    #job: "#/opt/oci-hpc/billing/invoice_per_user.sh --verbose --account \"{account_name}\" | sudo tee /data/{account_name}/invoices/{account_name}_invoices_per_user.csv >/dev/null"
+    #when: autoscaling | bool
 
 # Backup Jobs
 
@@ -134,6 +139,7 @@
     hour: "0"
     user: '{{ ansible_user }}'
     job: "python /opt/oci-hpc/scripts/ldap_backup.py"
+  when: autoscaling | bool
 
 - name: Backup accounting
   cron:
@@ -142,6 +148,7 @@
     hour: "0"
     user: '{{ ansible_user }}'
     job: "/opt/oci-hpc/scripts/accounting_backup.sh"
+  when: autoscaling | bool
 
 - name: Backup Slurm
   cron:
@@ -150,6 +157,7 @@
     hour: "0"
     user: '{{ ansible_user }}'
     job: "/opt/oci-hpc/scripts/slurm_backup.sh"
+  when: autoscaling | bool
 
 - name: Backup monitoring
   cron:
@@ -158,6 +166,7 @@
     hour: "0"
     user: '{{ ansible_user }}'
     job: "/opt/oci-hpc/scripts/monitoring_backup.sh"
+  when: autoscaling | bool
 
 - name: Backup current crontab daily to prevent accidental deletion with crontab -d
   cron:
@@ -165,3 +174,5 @@
     special_time: daily
     user: '{{ ansible_user }}'
     job: '[ -s <(crontab -l 2>/dev/null) ] && crontab -l > "$HOME/crontab_backup_$(date +\\%Y\\%m\\%d).txt"'
+  when: autoscaling | bool
+
