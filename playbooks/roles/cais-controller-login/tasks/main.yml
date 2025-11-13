@@ -9,3 +9,33 @@
 
 - include_tasks: debian.yml
   when: ansible_distribution == 'Debian'
+
+- name: Ensure slurmctld logrotate config is present on controllers
+  become: true
+  template:
+    src: slurmctld-logrotate.j2
+    dest: /etc/logrotate.d/slurmctld
+    owner: root
+    group: root
+    mode: '0644'
+  when: "'controller' in group_names"
+
+- name: Ensure slurmdbd logrotate config is present on controllers
+  become: true
+  template:
+    src: slurmdbd-logrotate.j2
+    dest: /etc/logrotate.d/slurmdbd
+    owner: root
+    group: root
+    mode: '0644'
+  when: "'controller' in group_names"
+
+- name: Ensure slurmd logrotate config is present on login nodes
+  become: true
+  template:
+    src: roles/cais-compute/templates/slurmd-logrotate.j2
+    dest: /etc/logrotate.d/slurmd
+    owner: root
+    group: root
+    mode: '0644'
+  when: "'login' in group_names"
