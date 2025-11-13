@@ -181,4 +181,4 @@
     name: idle job reaper
     minute: "*/5"
     user: "{{ ansible_user }}"
-    job: "/usr/bin/python3 /opt/oci-hpc/scripts/idle-job-reaper.py >> /opt/oci-hpc/logs/idle-job-reaper_$(date +\\%Y\\%m\\%d).log 2>&1"
+    job: "/usr/bin/python3 /opt/oci-hpc/scripts/idle-job-reaper.py >> /opt/oci-hpc/logs/idle-job-reaper.log 2>&1
