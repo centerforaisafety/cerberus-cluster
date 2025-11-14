@@ -1,0 +1,10 @@
+---
+- name: reload slurmd unit
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: restart slurmd
+  ansible.builtin.service:
+    name: slurmd
+    state: restarted
+  when: slurmd_service_available | default(false)

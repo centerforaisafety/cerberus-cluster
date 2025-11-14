@@ -1,0 +1,75 @@
+---
+- name: Detect presence of slurmd service
+  ansible.builtin.command:
+    argv:
+      - systemctl
+      - list-unit-files
+      - slurmd.service
+  register: slurmd_unit_lookup
+  changed_when: false
+  failed_when: false
+
+- name: Record slurmd service availability
+  ansible.builtin.set_fact:
+    slurmd_service_available: "{{ slurmd_unit_lookup.rc == 0 }}"
+
+- name: Configure slurmd controller defaults
+  ansible.builtin.copy:
+    dest: /etc/default/slurmd
+    content: |
+      SLURMD_OPTIONS="--conf-server=cais-controller,cais-backup"
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - reload slurmd unit
+    - restart slurmd
+
+- name: Ensure systemd drop-in directory exists
+  ansible.builtin.file:
+    path: /etc/systemd/system/slurmd.service.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Configure slurmd systemd type override
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/slurmd.service.d/type.conf
+    content: |
+      [Service]
+      Type=notify
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - reload slurmd unit
+    - restart slurmd
+
+- name: Apply slurmd configuration changes immediately
+  ansible.builtin.meta: flush_handlers
+
+- name: Show slurmd service status
+  ansible.builtin.shell: systemctl --no-pager --full status slurmd | sed -n '1,80p'
+  args:
+    warn: false
+  changed_when: false
+  when: slurmd_service_available | default(false)
+
+- name: Check Slurm controller reachability
+  ansible.builtin.command: scontrol ping
+  register: scontrol_ping
+  changed_when: false
+  failed_when: false
+
+- name: Display recent slurmd journal entries
+  ansible.builtin.command:
+    argv:
+      - journalctl
+      - -u
+      - slurmd
+      - -n
+      - "80"
+      - --no-pager
+  changed_when: false
+  when: slurmd_service_available | default(false)

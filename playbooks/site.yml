@@ -469,3 +469,11 @@
   tasks: 
     - include_role:
         name: cais-compute
+
+- hosts: compute, login
+  become: true
+  tasks:
+    - include_role:
+        name: type-notify
+      tags:
+        - type-notify
