@@ -9,3 +9,13 @@
 
 - include_tasks: debian.yml
   when: ansible_distribution == 'Debian'
+
+- name: Ensure slurmd logrotate config is present on compute nodes
+  become: true
+  template:
+    src: slurmd-logrotate
+    dest: /etc/logrotate.d/slurmd
+    owner: root
+    group: root
+    mode: '0644'
+  when: "'compute' in group_names"
