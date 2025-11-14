@@ -46,30 +46,12 @@
     - reload slurmd unit
     - restart slurmd
 
-- name: Apply slurmd configuration changes immediately
-  ansible.builtin.meta: flush_handlers
+- name: reload slurmd unit
+  ansible.builtin.systemd:
+    daemon_reload: true
 
-- name: Show slurmd service status
-  ansible.builtin.shell: systemctl --no-pager --full status slurmd | sed -n '1,80p'
-  args:
-    warn: false
-  changed_when: false
-  when: slurmd_service_available | default(false)
-
-- name: Check Slurm controller reachability
-  ansible.builtin.command: scontrol ping
-  register: scontrol_ping
-  changed_when: false
-  failed_when: false
-
-- name: Display recent slurmd journal entries
-  ansible.builtin.command:
-    argv:
-      - journalctl
-      - -u
-      - slurmd
-      - -n
-      - "80"
-      - --no-pager
-  changed_when: false
+- name: restart slurmd
+  ansible.builtin.service:
+    name: slurmd
+    state: restarted
   when: slurmd_service_available | default(false)
