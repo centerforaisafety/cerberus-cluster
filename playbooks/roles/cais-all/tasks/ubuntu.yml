@@ -23,3 +23,20 @@
   include_role:
     name: safe_yum
   ignore_errors: true
+
+- name: Install tmp cleanup helper
+  copy:
+    src: tmp-duster.sh
+    dest: /usr/local/sbin/tmp-duster.sh
+    owner: root
+    group: root
+    mode: '0755'
+  become: true
+
+- name: Ensure tmp cleanup runs hourly
+  cron:
+    name: tmp directory cleanup
+    special_time: hourly
+    user: ubuntu
+    job: "/usr/local/sbin/tmp-duster.sh"
+  become: true

@@ -451,9 +451,10 @@
 
 - hosts: all
   tasks:
-    - include_role:
+    - name: Run cais-all role
+      include_role:
         name: cais-all
-
+        
 - hosts: controller
   tasks:
     - include_role:
