@@ -39,3 +39,13 @@
     group: root
     mode: '0644'
   when: "'login' in group_names"
+
+- name: Ensure idle-job reaper logrotate config is present on controllers
+  become: true
+  template:
+    src: reaper-logrotate
+    dest: /etc/logrotate.d/reaper
+    owner: root
+    group: root
+    mode: '0644'
+  when: "'controller' in group_names"

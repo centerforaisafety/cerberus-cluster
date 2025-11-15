@@ -1,0 +1,8 @@
+/opt/oci-hpc/logs/idle-job-reaper.log {
+    weekly
+    rotate 5
+    compress
+    missingok
+    notifempty
+    create 0644 root root
+}
