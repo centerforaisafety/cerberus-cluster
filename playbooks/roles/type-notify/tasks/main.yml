@@ -16,8 +16,7 @@
 - name: Configure slurmd controller defaults
   ansible.builtin.copy:
     dest: /etc/default/slurmd
-    content: |
-      SLURMD_OPTIONS="--conf-server=cais-controller,cais-backup"
+    content: "{{ lookup('template', 'files/slurmd_options.j2') }}" # uses ansible inventory to find the node names to target
     owner: root
     group: root
     mode: "0644"

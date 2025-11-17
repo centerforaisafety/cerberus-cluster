@@ -1,0 +1,1 @@
+SLURMD_OPTIONS="--conf-server={{ hostvars[groups['controller'][0]]['ansible_fqdn'].split('.')[0] }}{% if (groups['slurm_backup'] | length) > 0 %},{{ hostvars[groups['slurm_backup'][0]]['ansible_fqdn'].split('.')[0] }}{% endif %}"
