@@ -20,9 +20,7 @@
     owner: root
     group: root
     mode: "0644"
-  notify:
-    - reload slurmd unit
-    - restart slurmd
+  register: slurmd_defaults
 
 - name: Ensure systemd drop-in directory exists
   ansible.builtin.file:
@@ -41,16 +39,31 @@
     owner: root
     group: root
     mode: "0644"
-  notify:
-    - reload slurmd unit
-    - restart slurmd
+  register: slurmd_type_override
 
 - name: reload slurmd unit
   ansible.builtin.systemd:
     daemon_reload: true
+  when: >
+    (
+      slurmd_defaults is defined and slurmd_defaults.changed
+    )
+    or
+    (
+      slurmd_type_override is defined and slurmd_type_override.changed
+    )
 
 - name: restart slurmd
   ansible.builtin.service:
     name: slurmd
     state: restarted
-  when: slurmd_service_available | default(false)
+  when:
+    - slurmd_service_available | default(false)
+    - >
+      (
+        slurmd_defaults is defined and slurmd_defaults.changed
+      )
+      or
+      (
+        slurmd_type_override is defined and slurmd_type_override.changed
+      )
