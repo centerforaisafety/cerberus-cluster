@@ -1,0 +1,69 @@
+---
+- name: Detect presence of slurmd service
+  ansible.builtin.command:
+    argv:
+      - systemctl
+      - list-unit-files
+      - slurmd.service
+  register: slurmd_unit_lookup
+  changed_when: false
+  failed_when: false
+
+- name: Record slurmd service availability
+  ansible.builtin.set_fact:
+    slurmd_service_available: "{{ slurmd_unit_lookup.rc == 0 }}"
+
+- name: Configure slurmd controller defaults
+  ansible.builtin.copy:
+    dest: /etc/default/slurmd
+    content: "{{ lookup('template', 'files/slurmd_options.j2') }}" # uses ansible inventory to find the node names to target
+    owner: root
+    group: root
+    mode: "0644"
+  register: slurmd_defaults
+
+- name: Ensure systemd drop-in directory exists
+  ansible.builtin.file:
+    path: /etc/systemd/system/slurmd.service.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Configure slurmd systemd type override
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/slurmd.service.d/type.conf
+    content: |
+      [Service]
+      Type=notify
+    owner: root
+    group: root
+    mode: "0644"
+  register: slurmd_type_override
+
+- name: reload slurmd unit
+  ansible.builtin.systemd:
+    daemon_reload: true
+  when: >
+    (
+      slurmd_defaults is defined and slurmd_defaults.changed
+    )
+    or
+    (
+      slurmd_type_override is defined and slurmd_type_override.changed
+    )
+
+- name: restart slurmd
+  ansible.builtin.service:
+    name: slurmd
+    state: restarted
+  when:
+    - slurmd_service_available | default(false)
+    - >
+      (
+        slurmd_defaults is defined and slurmd_defaults.changed
+      )
+      or
+      (
+        slurmd_type_override is defined and slurmd_type_override.changed
+      )

@@ -449,6 +449,14 @@
       # skip if user_traffic rc exits with 0, which is a success and it exists. When other sign, reconfigure
       when: (user_traffic_on.rc | default(1) | int) != 0
 
+- hosts: compute, login
+  become: true
+  tasks:
+    - include_role:
+        name: type-notify
+      tags:
+        - type-notify
+
 - hosts: all
   tasks:
     - include_role:
@@ -469,3 +477,5 @@
   tasks: 
     - include_role:
         name: cais-compute
+
+
