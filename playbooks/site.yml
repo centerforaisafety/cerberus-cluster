@@ -385,6 +385,7 @@
       when: ldap|default(true)|bool
 
 - hosts: all
+  become: true
   vars:
     destroy: false
     initial: true
@@ -400,7 +401,7 @@
     - include_role: 
         name: spack
       when: spack|default(false)|bool
-    - include_role: 
+    - include_role:
         name: slurm
       when: slurm|default(false)|bool
 
@@ -477,5 +478,3 @@
   tasks: 
     - include_role:
         name: cais-compute
-
-

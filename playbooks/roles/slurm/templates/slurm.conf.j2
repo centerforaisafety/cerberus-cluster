@@ -103,7 +103,7 @@ TrackWckey=no
 PreemptType=preempt/partition_prio
 PreemptMode=REQUEUE,GANG
 
-
+JobSubmitPlugins=lua
 
 {% if (groups['login']| length ) > 0 %}
 NodeName={{ hostvars[groups['login'][0]]['ansible_fqdn'].split('.')[0] }}
