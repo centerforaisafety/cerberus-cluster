@@ -125,15 +125,15 @@ NodeSet=tamper_resistance Feature=tamper_resistance # NodeSet for Tamper Resista
 {%- endfor %}
 # CAIS partition
 PartitionName=cais_cpu Nodes=cais DefaultTime=02:00:00 MaxTime=2-0 State=UP PriorityTier=3 PreemptMode=OFF #AllowGroups=cais,spar,ubuntu QOS=cpuonly
-PartitionName=cais Nodes=cais DefaultTime=02:00:00 MaxTime=1-0 State=UP PriorityTier=2 PreemptMode=OFF 
+PartitionName=cais Nodes=cais DefaultTime=02:00:00 MaxTime=1-0 State=UP PriorityTier=2 PreemptMode=OFF
 
 # Schmidt Sciences partition
 PartitionName=schmidt_sciences_cpu Nodes=schmidt_sciences DefaultTime=02:00:00 MaxTime=2-0 State=UP PriorityTier=2 PreemptMode=OFF #DenyAccounts=cais,spar QOS=cpuonly
-PartitionName=schmidt_sciences Nodes=schmidt_sciences DefaultTime=02:00:00 MaxTime=1-0 State=UP PriorityTier=1 PreemptMode=OFF  
+PartitionName=schmidt_sciences Nodes=schmidt_sciences DefaultTime=02:00:00 MaxTime=1-0 State=UP PriorityTier=1 PreemptMode=OFF
 
 # Tamper Resistance partition
 PartitionName=tamper_resistance_cpu Nodes=tamper_resistance DefaultTime=02:00:00 MaxTime=2-0 State=UP PriorityTier=3 PreemptMode=OFF #DenyAccounts=cais,spar,schmidt_sciences QOS=cpuonly
-PartitionName=tamper_resistance Nodes=tamper_resistance DefaultTime=02:00:00 MaxTime=1-0 State=UP PriorityTier=1 PreemptMode=OFF  
+PartitionName=tamper_resistance Nodes=tamper_resistance DefaultTime=02:00:00 MaxTime=1-0 State=UP PriorityTier=1 PreemptMode=OFF
 {% else %}
 {% set nodesList = [] %}
 {% for instance in partition.instance_types %}
