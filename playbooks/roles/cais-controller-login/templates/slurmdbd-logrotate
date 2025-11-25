@@ -1,5 +1,5 @@
 /var/log/slurm/slurmdbd.log {
-    daily
+    weekly
     rotate 5
     compress
     missingok
