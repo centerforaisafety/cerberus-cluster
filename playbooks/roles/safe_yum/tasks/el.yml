@@ -21,7 +21,7 @@
         jid: "{{ yum_sleeper.ansible_job_id }}"
       register: job_result
       until: job_result.finished
-      retries: 30
+      retries: 10
       delay: 10
       when: not ansible_check_mode and (package_repo|default('None') != 'None')
       failed_when: job_result.rc is defined and job_result.rc > 0 and not 'could not find job' in job_result.msg
@@ -45,7 +45,7 @@
         jid: "{{ yum_sleeper.ansible_job_id }}"
       register: job_result
       until: job_result.finished
-      retries: 30
+      retries: 10
       delay: 10
       when: package_repo|default('None') == 'None'
       failed_when: job_result.rc is defined and job_result.rc > 0 and not 'could not find job' in job_result.msg
@@ -71,7 +71,7 @@
         disable_gpg_check: "{{ disable_gpg_check_var| default('false') | bool}}"
         allow_downgrade: "{{ package_allow_downgrade | default('false') | bool }}"
       register: packages_output
-      retries: 5
+      retries: 10
       delay: 10
       until: packages_output is not failed
       when: package_repo|default('None') != 'None'
@@ -85,7 +85,7 @@
         lock_timeout: 90
         allow_downgrade: "{{ package_allow_downgrade | default('false') | bool }}"
       register: packages_output
-      retries: 5
+      retries: 10
       delay: 10
       until: packages_output is not failed
       when: package_repo|default('None') == 'None'
