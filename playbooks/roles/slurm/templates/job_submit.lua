@@ -17,25 +17,44 @@ local function safe_int(v, default)
     return v
 end
 
--- Parse GPU count from gres string of the form "gpu:N" or "gpu:TYPE:N"
+local function trim(value)
+    if not value then
+        return ""
+    end
+    return value:match("^%s*(.-)%s*$")
+end
+
+-- Parse GPU count from gres strings such as:
+--   * gpu:4
+--   * gpu:a100:1g.10gb:2
+--   * gpu:a100:2(IDX:0-1)
+--   * gpu=2
 local function parse_gpus_from_gres(gres)
     if not gres or gres == "" then
         return 0
     end
 
-    -- Try "gpu:N"
-    local n = gres:match("gpu:(%d+)")
-    if n then
-        return tonumber(n) or 0
+    local total = 0
+
+    for token in gres:gmatch("[^,]+") do
+        local entry = trim(token)
+        if entry ~= "" then
+            local lower = entry:lower()
+            if lower:find("^gpu") then
+                local sanitized = entry:gsub("%b()", "")
+                local count = sanitized:match(":(%d+)%s*$") or sanitized:match("=(%d+)%s*$")
+
+                if count then
+                    total = total + (tonumber(count) or 0)
+                else
+                    -- Assume a single GPU if none specified explicitly.
+                    total = total + 1
+                end
+            end
+        end
     end
 
-    -- Try "gpu:TYPE:N"
-    n = gres:match("gpu:[^:]+:(%d+)")
-    if n then
-        return tonumber(n) or 0
-    end
-
-    return 0
+    return total
 end
 
 local function cap_timelimit(job_desc, max_minutes)
@@ -62,6 +81,9 @@ end
 
 function slurm_job_submit(job_desc, part_list, submit_uid)
     local is_batch = (job_desc.script ~= nil)
+    if job_desc.batch_flag ~= nil then
+        is_batch = job_desc.batch_flag ~= 0
+    end
 
     local partition  = job_desc.partition or "nil"
     local gres       = job_desc.gres or ""
@@ -84,7 +106,7 @@ function slurm_job_submit(job_desc, part_list, submit_uid)
     -- ------------------------------------------------------------
     if not is_batch then
         local max_minutes     = 120    -- 2 hours
-        local max_total_gpus  = 2      -- total GPUs per job
+        local max_total_gpus  = 4      -- total GPUs per job
         local max_nodes       = 1      -- single node
 
         -- --------------------------------------------------------
@@ -98,12 +120,14 @@ function slurm_job_submit(job_desc, part_list, submit_uid)
         local req_min_nodes = safe_int(job_desc.min_nodes or job_desc.num_nodes or 1, 1)
         local req_max_nodes = safe_int(job_desc.max_nodes or req_min_nodes, 1)
 
-        if req_max_nodes > max_nodes then
+        if req_min_nodes > max_nodes or req_max_nodes > max_nodes then
+            local requested = math.max(req_min_nodes, req_max_nodes)
             slurm.log_user(
                 "Interactive jobs are limited to %d node(s) (requested up to %d). " ..
-                "Capping to %d node.",
-                max_nodes, req_max_nodes, max_nodes
+                "Please submit a batch job via sbatch for multi-node workloads.",
+                max_nodes, requested
             )
+            return slurm.ERROR
         end
 
         job_desc.min_nodes = max_nodes
@@ -115,15 +139,10 @@ function slurm_job_submit(job_desc, part_list, submit_uid)
         if gpu_count > max_total_gpus then
             slurm.log_user(
                 "Interactive jobs are limited to %d total GPU(s) (requested %d). " ..
-                "Capping to %d.",
-                max_total_gpus, gpu_count, max_total_gpus
+                "Please submit a batch job via sbatch for larger GPU requests.",
+                max_total_gpus, gpu_count
             )
-
-            -- Replace gres string with capped GPU count
-            local capped_gres = gres:gsub("gpu:([^:]+):%d+", "gpu:%1:" .. max_total_gpus)
-            capped_gres = capped_gres:gsub("gpu:%d+", "gpu:" .. max_total_gpus)
-            job_desc.gres = capped_gres
-            gpu_count = max_total_gpus
+            return slurm.ERROR
         end
 
         -- --------------------------------------------------------
