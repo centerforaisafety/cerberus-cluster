@@ -25,6 +25,7 @@
   ignore_errors: true
 
 - name: Install tmp cleanup helper
+  become: true
   copy:
     src: tmp-duster.sh
     dest: /usr/local/sbin/tmp-duster.sh
@@ -34,6 +35,7 @@
   become: true
 
 - name: Ensure tmp cleanup runs hourly
+  become: true
   cron:
     name: tmp directory cleanup
     special_time: hourly
