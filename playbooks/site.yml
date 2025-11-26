@@ -400,8 +400,9 @@
     - include_role: 
         name: spack
       when: spack|default(false)|bool
-    - include_role: 
+    - include_role:
         name: slurm
+      become: true
       when: slurm|default(false)|bool
 
 - hosts: controller, slurm_backup
@@ -477,5 +478,3 @@
   tasks: 
     - include_role:
         name: cais-compute
-
-
