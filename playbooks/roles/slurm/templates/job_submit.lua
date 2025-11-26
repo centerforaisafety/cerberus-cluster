@@ -23,60 +23,6 @@ local function trim(value)
     end
     return value:match("^%s*(.-)%s*$")
 end
--- To avoid false positivies, the function looks through the script and strips the script of shebangs, comments etc 
--- until we find just the command
-local function script_invokes_srun(script)
-    if not script or script == "" then
-        return false
-    end
-
-    local normalized = script:gsub("\r\n", "\n")
-    for line in normalized:gmatch("[^\n]+") do
-        local trimmed_line = trim(line)
-        if trimmed_line ~= "" then
-            -- Skip shebangs, SBATCH directives, and normal comments.
-            if trimmed_line:sub(1, 1) == "#" then
-                goto continue
-            end
-
-            -- Remove simple trailing comments.
-            local code = trimmed_line:gsub("%s+#.*$", "")
-            if code ~= "" then
-                -- Split on basic shell separators to inspect each command chunk.
-                for chunk in code:gmatch("[^;&|]+") do
-                    local text = trim(chunk)
-                    if text ~= "" then
-                        -- Drop simple negations.
-                        text = text:gsub("^!+%s*", "")
-
-                        -- Drop leading KEY=VALUE assignments.
-                        while true do
-                            local key, rest = text:match("^([_%w][_%w%d]*)%s*=%s*(.+)$")
-                            if not key then
-                                break
-                            end
-                            text = trim(rest)
-                            if text == "" then
-                                break
-                            end
-                        end
-
-                        local cmd = text:match("^(%S+)")
-                        if cmd then
-                            local basename = cmd:match("([^/]+)$") or cmd
-                            if basename == "srun" then
-                                return true
-                            end
-                        end
-                    end
-                end
-            end
-        end
-        ::continue::
-    end
-
-    return false
-end
 
 -- Parse GPU count from gres strings such as:
 --   * gpu:4
@@ -143,44 +89,25 @@ function slurm_job_submit(job_desc, part_list, submit_uid)
     local gres       = job_desc.gres or ""
     local timelimit  = job_desc.time_limit or 0
     local gpu_count  = parse_gpus_from_gres(gres)
-    local script_has_srun = script_invokes_srun(job_desc.script)
 
     slurm.log_info(
         "job_submit.lua: uid=%d is_batch=%s part=%s gres=%s " ..
-        "gpus=%d timelimit=%d script_has_srun=%s",
+        "gpus=%d timelimit=%d",
         submit_uid,
         tostring(is_batch),
         partition,
         gres,
         gpu_count,
-        timelimit,
-        tostring(script_has_srun)
+        timelimit
     )
-
-    -- checks for both conditions
-    local enforce_interactive = (not is_batch) or script_has_srun
 
     -- ------------------------------------------------------------
     -- INTERACTIVE JOB POLICY (srun -> no script)
     -- ------------------------------------------------------------
-    if enforce_interactive then
+    if not is_batch then
         local max_minutes     = 120    -- 2 hours
         local max_total_gpus  = 4      -- total GPUs per job
         local max_nodes       = 1      -- single node
-
-        if script_has_srun then
-            slurm.log_info(
-                "job_submit.lua: SBATCH script uses srun; enforcing interactive limits (uid=%d)",
-                submit_uid
-            )
-            slurm.log_user(
-                "Detected srun usage inside an sbatch script. Interactive job limits apply: " ..
-                "max %d minutes, %d node(s), %d GPU(s).",
-                max_minutes,
-                max_nodes,
-                max_total_gpus
-            )
-        end
 
         -- --------------------------------------------------------
         -- 1) Cap runtime
