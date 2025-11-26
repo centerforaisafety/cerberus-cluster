@@ -3,7 +3,7 @@
   become: true
   shell: ps aux | grep "apt update" | grep -v grep | wc -l
   register: result
-  retries: 30
+  retries: 5
   delay: 10
   until: result.stdout | int == 0
 
@@ -16,7 +16,7 @@
     update_cache: "{{package_cache | default('false')}}"
   register: result
   until: result is not failed
-  retries: 5
+  retries: 10
   delay: 5
   when: not deb_name is defined
 
@@ -29,7 +29,7 @@
     update_cache: "{{package_cache | default('false')}}"
   register: result
   until: result is not failed
-  retries: 5
+  retries: 10
   delay: 5
   when: deb_name is defined
   with_items: "{{deb_name}}"
@@ -39,6 +39,6 @@
   become: true
   shell: ps aux | grep "apt update" | grep -v grep | wc -l
   register: result
-  retries: 30
+  retries: 5
   delay: 10
   until: result.stdout | int == 0
