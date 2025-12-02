@@ -8,3 +8,7 @@
   include_role:
     name: safe_yum
   ignore_errors: true
+
+- name: Install Lua 5.4.6 from source
+  include_tasks: install_lua.yml
+  when: "'controller' in group_names"
