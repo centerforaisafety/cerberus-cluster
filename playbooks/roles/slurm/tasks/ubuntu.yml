@@ -6,6 +6,15 @@
   include_tasks: server.yml
   when: ('controller' in group_names) and (not destroy|bool) and (initial| bool)
 
+- name: install job_submit.lua
+  become: true
+  template:
+    src: job_submit.lua
+    dest: /etc/slurm/job_submit.lua
+    owner: slurm
+    group: slurm
+    mode: '0644'
+
 - name: run compute directives
   include_tasks: "compute{{rack_aware_playbook_suffix}}.yml"
   when: ('compute' in group_names) and (not destroy|bool)
