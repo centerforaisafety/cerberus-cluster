@@ -10,11 +10,19 @@ from typing import List, Dict
 import requests
 
 class GPUJobReaper:
+    # Job IDs to exclude from reaping (add job IDs here to protect them)
+    EXEMPT_JOBS = {
+        60938,  # Add job IDs here to exempt them from reaping
+    }
+    EXEMPT_USERS = {
+        "mantas_mazeika" # uid: 10039
+    }
+
     def __init__(self):
         self.step_min = 1
         self.window_min = 60
         self.expected_values = self.window_min // self.step_min + 1
-        self.min_util = 5.0
+        self.min_util = 0.01
         self.prometheus_url = "http://localhost:8428/prometheus/api/v1/query_range"
 
     def get_gpu_jobs(self) -> List[int]:
@@ -131,7 +139,19 @@ class GPUJobReaper:
                 "gpus": "0", "start_time": 0
             }
 
-    def should_reap_job(self, util_data: Dict) -> bool:
+    def should_reap_job(self, job_id: int, user_name: str, util_data: Dict) -> bool:
+        if user_name == "unknown":
+            print(f"WARNING: job {job_id} has unknown owner; skipping reap check")
+            return False
+            
+        # Check if user is exempt
+        if user_name in self.EXEMPT_USERS:
+            return False
+
+        # Check if job is exempt
+        if job_id in self.EXEMPT_JOBS:
+            return False
+
         values = util_data["values"]
         avg_util = util_data["avg_util"]
 
@@ -141,11 +161,11 @@ class GPUJobReaper:
         try:
             admin_comment = f"GPU utilization below threshold of {self.min_util} for {self.window_min} minutes"
             subprocess.run(
-                ["sudo", "scontrol", "update", f"job={job_id}", f"AdminComment={admin_comment}"],
+                ["scontrol", "update", f"job={job_id}", f"AdminComment={admin_comment}"],
                 check=True
             )
 
-            subprocess.run(["sudo", "scancel", str(job_id)], check=True)
+            subprocess.run(["scancel", str(job_id)], check=True)
             return True
 
         except subprocess.CalledProcessError as e:
@@ -170,9 +190,11 @@ class GPUJobReaper:
         for job_id in job_ids:
             util_data = self.get_gpu_utilization(job_id)
             job_info = self.get_job_info(job_id)
+            user_name = job_info["owner"]
             duration_h = self.format_duration(now_timestamp - job_info["start_time"])
-            should_reap = self.should_reap_job(util_data)
-            reap_str = "REAP" if should_reap else ""
+            should_reap = self.should_reap_job(job_id, user_name, util_data)
+            is_exempt = job_id in self.EXEMPT_JOBS
+            reap_str = "EXEMPT" if is_exempt else ("REAP" if should_reap else "")
 
             if should_reap:
                 cancel_queue.append(job_id)
