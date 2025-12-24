@@ -10,10 +10,6 @@ from typing import List, Dict
 import requests
 
 class GPUJobReaper:
-    # Job IDs to exclude from reaping (add job IDs here to protect them)
-    EXEMPT_JOBS = {
-        60938,  # Add job IDs here to exempt them from reaping
-    }
     EXEMPT_USERS = {
         "mantas_mazeika" # uid: 10039
     }
@@ -22,7 +18,7 @@ class GPUJobReaper:
         self.step_min = 1
         self.window_min = 60
         self.expected_values = self.window_min // self.step_min + 1
-        self.min_util = 0.01
+        self.min_util = 0.05
         self.prometheus_url = "http://localhost:8428/prometheus/api/v1/query_range"
 
     def get_gpu_jobs(self) -> List[int]:
@@ -95,7 +91,7 @@ class GPUJobReaper:
     def get_job_info(self, job_id: int) -> Dict:
         try:
             result = subprocess.run(
-                ["scontrol", "show", "job", str(job_id), "--json=v0.0.40"],
+                ["sudo", "scontrol", "show", "job", str(job_id), "--json=v0.0.40"],
                 capture_output=True,
                 text=True,
                 check=True
@@ -165,7 +161,7 @@ class GPUJobReaper:
                 check=True
             )
 
-            subprocess.run(["scancel", str(job_id)], check=True)
+            subprocess.run(["sudo", "scancel", str(job_id)], check=True)
             return True
 
         except subprocess.CalledProcessError as e:
