@@ -10,11 +10,15 @@ from typing import List, Dict
 import requests
 
 class GPUJobReaper:
+    EXEMPT_USERS = {
+        "mantas_mazeika" # uid: 10039
+    }
+
     def __init__(self):
         self.step_min = 1
         self.window_min = 60
         self.expected_values = self.window_min // self.step_min + 1
-        self.min_util = 5.0
+        self.min_util = 0.05
         self.prometheus_url = "http://localhost:8428/prometheus/api/v1/query_range"
 
     def get_gpu_jobs(self) -> List[int]:
@@ -131,7 +135,16 @@ class GPUJobReaper:
                 "gpus": "0", "start_time": 0
             }
 
-    def should_reap_job(self, util_data: Dict) -> bool:
+    def should_reap_job(self, job_id: int, user_name: str, util_data: Dict) -> bool:
+
+        # Check if user is exempt
+        if user_name in self.EXEMPT_USERS:
+            return False
+
+        # Check if job is exempt
+        if job_id in self.EXEMPT_JOBS:
+            return False
+
         values = util_data["values"]
         avg_util = util_data["avg_util"]
 
@@ -170,8 +183,9 @@ class GPUJobReaper:
         for job_id in job_ids:
             util_data = self.get_gpu_utilization(job_id)
             job_info = self.get_job_info(job_id)
+            user_name = job_info["owner"]
             duration_h = self.format_duration(now_timestamp - job_info["start_time"])
-            should_reap = self.should_reap_job(util_data)
+            should_reap = self.should_reap_job(job_id, user_name, util_data)
             reap_str = "REAP" if should_reap else ""
 
             if should_reap:
