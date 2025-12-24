@@ -91,7 +91,7 @@ class GPUJobReaper:
     def get_job_info(self, job_id: int) -> Dict:
         try:
             result = subprocess.run(
-                ["sudo", "scontrol", "show", "job", str(job_id), "--json=v0.0.40"],
+                ["scontrol", "show", "job", str(job_id), "--json=v0.0.40"],
                 capture_output=True,
                 text=True,
                 check=True
@@ -154,7 +154,7 @@ class GPUJobReaper:
         try:
             admin_comment = f"GPU utilization below threshold of {self.min_util} for {self.window_min} minutes"
             subprocess.run(
-                ["scontrol", "update", f"job={job_id}", f"AdminComment={admin_comment}"],
+                ["sudo", "scontrol", "update", f"job={job_id}", f"AdminComment={admin_comment}"],
                 check=True
             )
 
