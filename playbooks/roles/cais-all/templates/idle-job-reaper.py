@@ -136,10 +136,7 @@ class GPUJobReaper:
             }
 
     def should_reap_job(self, job_id: int, user_name: str, util_data: Dict) -> bool:
-        if user_name == "unknown":
-            print(f"WARNING: job {job_id} has unknown owner; skipping reap check")
-            return False
-            
+
         # Check if user is exempt
         if user_name in self.EXEMPT_USERS:
             return False
@@ -189,8 +186,7 @@ class GPUJobReaper:
             user_name = job_info["owner"]
             duration_h = self.format_duration(now_timestamp - job_info["start_time"])
             should_reap = self.should_reap_job(job_id, user_name, util_data)
-            is_exempt = job_id in self.EXEMPT_JOBS
-            reap_str = "EXEMPT" if is_exempt else ("REAP" if should_reap else "")
+            reap_str = "REAP" if should_reap else ""
 
             if should_reap:
                 cancel_queue.append(job_id)
