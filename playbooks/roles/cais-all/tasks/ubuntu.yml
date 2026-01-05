@@ -32,14 +32,11 @@
     owner: root
     group: root
     mode: '0755'
-  become: true
 
 - name: Ensure tmp cleanup runs hourly
   become: true
   cron:
     name: tmp directory cleanup
-    special_time: hourly
     user: ubuntu
+    minute: "*/5"    
     job: "/usr/local/sbin/tmp-duster.sh"
-  become: true
-  
