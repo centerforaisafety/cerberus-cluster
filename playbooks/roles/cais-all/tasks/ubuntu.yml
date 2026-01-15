@@ -42,4 +42,26 @@
     user: ubuntu
     job: "/usr/local/sbin/tmp-duster.sh"
   become: true
+
+- name: Install new healthchecks
+  become: true
+  block:
+    - name: Ensure healthchecks directory exists
+      file:
+        path: /opt/oci-hpc/healthchecks
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0755'
+
+    - name: Copy healthcheck scripts
+      copy:
+        src: "{{ item }}"
+        dest: "/opt/oci-hpc/healthchecks/{{ item }}"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0644'
+      loop:
+        - check_gpu_setup.py
+        - xid_checker.py
   
