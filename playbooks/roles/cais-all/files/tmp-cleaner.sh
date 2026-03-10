@@ -5,6 +5,13 @@ if [[ $EUID -ne 0 ]]; then
   exec sudo "$0" "$@"
 fi
 
+if command -v squeue &>/dev/null; then
+  active_jobs=$(squeue -h -w "$(hostname)" 2>/dev/null | wc -l)
+  if [ "$active_jobs" -gt 0 ]; then
+    exit 0
+  fi
+fi
+
 # --- Allowlist: never delete these ---
 is_protected() {
     local name
