@@ -24,24 +24,46 @@
     name: safe_yum
   ignore_errors: true
 
-- name: Install tmp cleanup helper
+- name: Install var-crash-nuke helper
   become: true
   copy:
-    src: tmp-duster.sh
-    dest: /usr/local/sbin/tmp-duster.sh
+    src: var-crash-nuke.sh
+    dest: /usr/local/sbin/var-crash-nuke.sh
     owner: root
     group: root
     mode: '0755'
-  become: true
 
-- name: Ensure tmp cleanup runs hourly
+- name: Install tmp-cleaner helper
+  become: true
+  copy:
+    src: tmp-cleaner.sh
+    dest: /usr/local/sbin/tmp-cleaner.sh
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Install cleanup runner
+  become: true
+  copy:
+    src: cleanup-runner.sh
+    dest: /usr/local/sbin/cleanup-runner.sh
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Ensure cleanup runs periodically
   become: true
   cron:
     name: tmp directory cleanup
     special_time: hourly
     user: ubuntu
-    job: "/usr/local/sbin/tmp-duster.sh"
+    job: "/usr/local/sbin/cleanup-runner.sh"
+
+- name: Remove old tmp-duster script
   become: true
+  file:
+    path: /usr/local/sbin/tmp-duster.sh
+    state: absent
 
 - name: Install new healthchecks
   become: true
