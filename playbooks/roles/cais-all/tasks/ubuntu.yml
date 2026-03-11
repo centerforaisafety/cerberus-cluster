@@ -55,7 +55,7 @@
   become: true
   cron:
     name: tmp directory cleanup
-    special_time: hourly
+    minute: "*/5"
     user: ubuntu
     job: "/usr/local/sbin/cleanup-runner.sh"
 

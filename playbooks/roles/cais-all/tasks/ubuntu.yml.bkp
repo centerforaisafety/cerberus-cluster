@@ -1,0 +1,44 @@
+---
+- name: Disable swap for current session
+  command: swapoff -a
+  become: true
+
+- name: Disable swap permanently, persist reboots
+  replace:
+    path: /etc/fstab
+    regexp: '^(\s*)([^#\n]+\s+)(\w+\s+)swap(\s+.*)$'
+    replace: '#\1\2\3swap\4'
+    backup: yes
+
+- name: Install packages
+  vars:
+    package_name:
+      - zsh
+      - git
+      - git-lfs
+      - fish
+      - neovim
+      - zip
+    package_state: latest
+  include_role:
+    name: safe_yum
+  ignore_errors: true
+
+- name: Install tmp cleanup helper
+  become: true
+  copy:
+    src: tmp-duster.sh
+    dest: /usr/local/sbin/tmp-duster.sh
+    owner: root
+    group: root
+    mode: '0755'
+  become: true
+
+- name: Ensure tmp cleanup runs hourly
+  cron:
+    name: tmp directory cleanup
+    special_time: hourly
+    user: ubuntu
+    job: "/usr/local/sbin/tmp-duster.sh"
+  become: true
+

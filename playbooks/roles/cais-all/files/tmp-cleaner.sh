@@ -17,7 +17,7 @@ is_protected() {
     local name
     name="$(basename "$1")"
     case "$name" in
-      tmux-*|claude-*|systemd-private-*|ssh-*|.X*|.ICE-*)
+      tmux-*|claude-*|systemd-private-*|ssh-*|.X*|.ICE-*|pip-*|jupyter-*)
         return 0 ;;
       .font-unix|.Test-unix|.XIM-unix)
         return 0 ;;
