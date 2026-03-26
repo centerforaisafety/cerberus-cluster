@@ -385,6 +385,7 @@
       when: ldap|default(true)|bool
 
 - hosts: all
+  become: true
   vars:
     destroy: false
     initial: true
@@ -402,7 +403,6 @@
       when: spack|default(false)|bool
     - include_role:
         name: slurm
-      become: true
       when: slurm|default(false)|bool
 
 - hosts: controller, slurm_backup
