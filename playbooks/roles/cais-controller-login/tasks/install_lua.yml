@@ -1,0 +1,41 @@
+---
+- name: Install Lua build dependencies
+  vars:
+    package_name:
+      - build-essential
+      - libreadline-dev
+      - curl
+    package_state: present
+    package_cache: true
+  include_role:
+    name: safe_yum
+
+- name: Ensure /usr/local/src exists
+  become: true
+  file:
+    path: /usr/local/src
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Download Lua 5.4.6 source
+  become: true
+  get_url:
+    url: https://www.lua.org/ftp/lua-5.4.6.tar.gz
+    dest: /usr/local/src/lua-5.4.6.tar.gz
+    mode: '0644'
+    force: false
+
+- name: Extract Lua 5.4.6 source
+  become: true
+  unarchive:
+    src: /usr/local/src/lua-5.4.6.tar.gz
+    dest: /usr/local/src
+    remote_src: true
+
+- name: Build and install Lua 5.4.6
+  become: true
+  command: make linux install
+  args:
+    chdir: /usr/local/src/lua-5.4.6
